@@ -13,6 +13,6 @@ ws.on('message', function(data, flags) {
 });
 
 ws.on('error', function(err) {
-    console.log(err);
-    process.exit(1);
+  console.log(err);
+  process.exit(1);
 });
