@@ -10,11 +10,8 @@ public class BHttpRequestFactory {
         int bodyOffset = requestInfo.getBodyOffset();
         byte[] rawRequest = request.getRequest();
         byte[] rawBody = Arrays.copyOfRange(rawRequest, bodyOffset, rawRequest.length);
+        IHttpService service = request.getHttpService();
         BHttpRequest req = new BHttpRequest();
-        req.messageType = "request";
-        req.method = requestInfo.getMethod();
-        req.url = requestInfo.getUrl().toString();
-
         // Burp populates the first header with the Method and Path.
         // Removing it here.
         List<String> allHeaders = requestInfo.getHeaders();
@@ -26,9 +23,18 @@ public class BHttpRequestFactory {
                 headerMap.put(values[0].trim(), values[1].trim());
             }
         }
+
+        req.messageType = "request";
+        req.method = requestInfo.getMethod();
+        req.url = requestInfo.getUrl().toString();
         req.headers = headerMap;
         req.raw = new String(rawRequest);
         req.body = new String(rawBody);
+        req.highlight = request.getHighlight();
+        req.comment = request.getComment();
+        req.host = service.getHost();
+        req.port = service.getPort();
+        req.protocol = service.getProtocol();
         return req;
     }
 }
