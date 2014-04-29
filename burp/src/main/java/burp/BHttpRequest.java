@@ -2,7 +2,7 @@ package burp;
 
 import java.util.HashMap;
 
-public class BHttpRequest {
+public class BHttpRequest extends BSocketMessage {
     public String url;
     public String method;
     public HashMap<String, String> headers;

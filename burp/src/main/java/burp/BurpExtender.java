@@ -39,6 +39,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IExtensionSta
         }
     }
 
+
     @Override
     public void extensionUnloaded() {
         try {

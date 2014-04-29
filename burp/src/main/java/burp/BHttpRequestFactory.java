@@ -11,6 +11,7 @@ public class BHttpRequestFactory {
         byte[] rawRequest = request.getRequest();
         byte[] rawBody = Arrays.copyOfRange(rawRequest, bodyOffset, rawRequest.length);
         BHttpRequest req = new BHttpRequest();
+        req.messageType = "request";
         req.method = requestInfo.getMethod();
         req.url = requestInfo.getUrl().toString();
 
