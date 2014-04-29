@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import com.google.gson.Gson;
 
-public class BurpExtender implements IBurpExtender, IHttpListener, IExtensionStateListener {
+public class BurpExtender implements IBurpExtender, IExtensionStateListener, IHttpListener, IScannerListener {
     static final String NAME = "Burp Buddy";
 
     private EventServer wss;
@@ -29,6 +29,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IExtensionSta
 
         callbacks.registerExtensionStateListener(this);
         callbacks.registerHttpListener(this);
+        callbacks.registerScannerListener(this);
     }
 
     @Override
@@ -39,6 +40,11 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IExtensionSta
         }
     }
 
+    @Override
+    public void newScanIssue(IScanIssue scanIssue) {
+        BScanIssue issue = BScanIssueFactory.create(scanIssue);
+        wss.sendToAll(gson.toJson(issue));
+    }
 
     @Override
     public void extensionUnloaded() {
