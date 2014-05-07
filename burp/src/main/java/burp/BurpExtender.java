@@ -12,12 +12,14 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, IHt
     private EventServer wss;
     private Gson gson = new Gson();
     private IExtensionHelpers helpers;
+    private PrintWriter stdout;
+    private PrintWriter stderr;
 
     @Override
     public void registerExtenderCallbacks (IBurpExtenderCallbacks callbacks) {
         callbacks.setExtensionName(NAME);
-        PrintWriter stdout = new PrintWriter(callbacks.getStdout(), true);
-        PrintWriter stderr = new PrintWriter(callbacks.getStderr(), true);
+        stdout = new PrintWriter(callbacks.getStdout(), true);
+        stderr = new PrintWriter(callbacks.getStderr(), true);
         helpers = callbacks.getHelpers();
         String ip = "127.0.0.1";
         int port =  8000;
@@ -25,7 +27,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, IHt
         InetSocketAddress address = new InetSocketAddress(ip, port);
         wss = new EventServer(stdout, stderr, address);
         wss.start();
-        stdout.println("Websocket server started at ws://" + ip + ":" + port);
+        stdout.println("WebSocket server started at ws://" + ip + ":" + port);
 
         callbacks.registerExtensionStateListener(this);
         callbacks.registerHttpListener(this);
@@ -51,9 +53,11 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, IHt
         try {
             wss.stop();
         } catch(IOException e) {
-            //
+            stderr.println("Exception when stopping WebSocket server.");
+            stderr.println(e.getMessage());
         } catch(InterruptedException e) {
-            //
+            stderr.println("Exception when stopping WebSocket server.");
+            stderr.println(e.getMessage());
         }
     }
 }
