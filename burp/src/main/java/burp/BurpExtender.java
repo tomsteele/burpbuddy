@@ -52,6 +52,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, IHt
     public void extensionUnloaded() {
         try {
             wss.stop();
+            stdout.println("WebSocket server stopped.");
         } catch(IOException e) {
             stderr.println("Exception when stopping WebSocket server.");
             stderr.println(e.getMessage());
