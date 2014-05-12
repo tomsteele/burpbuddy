@@ -6,7 +6,8 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import com.google.gson.Gson;
 
-public class BurpExtender implements IBurpExtender, IExtensionStateListener, IHttpListener, IScannerListener {
+public class BurpExtender implements IBurpExtender, IExtensionStateListener,
+        IHttpListener, IScannerListener, IProxyListener {
     static final String NAME = "Burp Buddy";
 
     private EventServer wss;
@@ -35,11 +36,19 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener, IHt
     }
 
     @Override
-    public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse request) {
+    public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse requestResponse) {
         if (messageIsRequest) {
-            BHttpRequest req = BHttpRequestFactory.create(request, helpers.analyzeRequest(request));
+            BHttpRequest req = BHttpRequestFactory.create(requestResponse, helpers.analyzeRequest(requestResponse));
             wss.sendToAll(gson.toJson(req));
+        } else {
+            BHttpResponse resp = BHttpResponseFactory.create(requestResponse, helpers.analyzeResponse(requestResponse.getResponse()));
+            wss.sendToAll(gson.toJson(resp));
         }
+    }
+
+    @Override
+    public void processProxyMessage(boolean messageIsRequest, IInterceptedProxyMessage message) {
+
     }
 
     @Override
