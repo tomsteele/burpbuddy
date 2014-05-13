@@ -36,8 +36,8 @@ public class BHttpResponseFactory {
         }
 
         resp.messageType = "response";
-        resp.raw = new String(rawResponse);
-        resp.body = new String(rawBody);
+        resp.raw = rawResponse;
+        resp.body = rawBody;
         resp.mimeType = responseInfo.getStatedMimeType();
         resp.statusCode = responseInfo.getStatusCode();
         resp.cookies = cookies;

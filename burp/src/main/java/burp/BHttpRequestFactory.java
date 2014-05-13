@@ -28,8 +28,8 @@ public class BHttpRequestFactory {
         req.method = requestInfo.getMethod();
         req.url = requestInfo.getUrl().toString();
         req.headers = headerMap;
-        req.raw = new String(rawRequest);
-        req.body = new String(rawBody);
+        req.raw = rawRequest;
+        req.body = rawBody;
         req.highlight = request.getHighlight();
         req.comment = request.getComment();
         req.host = service.getHost();

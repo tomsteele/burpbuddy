@@ -11,6 +11,6 @@ public class BHttpRequest extends BSocketMessage {
     public String url;
     public String method;
     public HashMap<String, String> headers;
-    public String body;
-    public String raw;
+    public byte[] body;
+    public byte[] raw;
 }

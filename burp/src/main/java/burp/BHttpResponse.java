@@ -5,8 +5,8 @@ import java.util.List;
 
 public class BHttpResponse extends BSocketMessage {
     public short statusCode;
-    public String raw;
-    public String body;
+    public byte[] raw;
+    public byte[] body;
     public HashMap<String, String> headers;
     public List<BCookie> cookies;
     public String mimeType;
