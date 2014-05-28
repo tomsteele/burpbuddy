@@ -1,6 +1,6 @@
 var WebSocket = require('ws');
 var request = require('request');
-var ws = new WebSocket('ws://192.168.1.171:8000/');
+var ws = new WebSocket('ws://127.0.0.1:8000/');
 
 ws.on('open', function() {
   console.log('opened connection to ws://localhost:8000/');
