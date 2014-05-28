@@ -20,6 +20,9 @@ ws.on('message', function(data, flags) {
         req.body = new Buffer(obj.body);
     }
     request(req, function(err, resp, body) {
+        if (err) {
+            return;
+        }
         console.log(resp.statusCode + " " + req.method + " " + obj.url);
         if (resp.statusCode < 300 && !err ) {
             console.log(body);
