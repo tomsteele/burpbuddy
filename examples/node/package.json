@@ -4,6 +4,7 @@
   "description": "Burp Buddy node.js examples",
   "license": "MIT",
   "dependencies": {
+    "request": "^2.36.0",
     "ws": "^0.4.31"
   }
 }
