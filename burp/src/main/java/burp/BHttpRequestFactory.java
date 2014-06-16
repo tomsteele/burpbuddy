@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class BHttpRequestFactory {
 
-    public static BHttpRequest create(IHttpRequestResponse request, IRequestInfo requestInfo) {
+    public static BHttpRequest create(IHttpRequestResponse request, IRequestInfo requestInfo, IBurpExtenderCallbacks callbacks) {
         int bodyOffset = requestInfo.getBodyOffset();
         byte[] rawRequest = request.getRequest();
         byte[] rawBody = Arrays.copyOfRange(rawRequest, bodyOffset, rawRequest.length);
@@ -35,6 +35,7 @@ public class BHttpRequestFactory {
         req.host = service.getHost();
         req.port = service.getPort();
         req.protocol = service.getProtocol();
+        req.inScope = callbacks.isInScope(requestInfo.getUrl());
         return req;
     }
 }

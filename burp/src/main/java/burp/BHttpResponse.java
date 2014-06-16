@@ -15,4 +15,5 @@ public class BHttpResponse extends BSocketMessage {
     public int port;
     public String highlight;
     public String comment;
+    public boolean inScope;
 }

@@ -14,5 +14,5 @@ public class BScanIssue extends BSocketMessage {
     public String remediationBackground;
     public String issueDetail;
     public String remediationDetail;
-
+    public boolean inScope;
 }

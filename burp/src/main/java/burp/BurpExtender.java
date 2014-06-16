@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import com.google.gson.Gson;
 
+
 public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         IHttpListener, IScannerListener, IProxyListener {
     static final String NAME = "Burp Buddy";
@@ -15,9 +16,11 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     private IExtensionHelpers helpers;
     private PrintWriter stdout;
     private PrintWriter stderr;
+    private IBurpExtenderCallbacks callbacks;
 
     @Override
     public void registerExtenderCallbacks (IBurpExtenderCallbacks callbacks) {
+        this.callbacks = callbacks;
         callbacks.setExtensionName(NAME);
         stdout = new PrintWriter(callbacks.getStdout(), true);
         stderr = new PrintWriter(callbacks.getStderr(), true);
@@ -29,7 +32,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         wss = new EventServer(stdout, stderr, address);
         wss.start();
         stdout.println("WebSocket server started at ws://" + ip + ":" + port);
-
         callbacks.registerExtensionStateListener(this);
         callbacks.registerHttpListener(this);
         callbacks.registerScannerListener(this);
@@ -38,10 +40,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     @Override
     public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse requestResponse) {
         if (messageIsRequest) {
-            BHttpRequest req = BHttpRequestFactory.create(requestResponse, helpers.analyzeRequest(requestResponse));
+            BHttpRequest req = BHttpRequestFactory.create(requestResponse, helpers.analyzeRequest(requestResponse),
+                    callbacks);
+
             wss.sendToAll(gson.toJson(req));
         } else {
-            BHttpResponse resp = BHttpResponseFactory.create(requestResponse, helpers.analyzeResponse(requestResponse.getResponse()));
+            BHttpResponse resp = BHttpResponseFactory.create(requestResponse,
+                    helpers.analyzeResponse(requestResponse.getResponse()), callbacks);
             wss.sendToAll(gson.toJson(resp));
         }
     }
@@ -53,7 +58,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
     @Override
     public void newScanIssue(IScanIssue scanIssue) {
-        BScanIssue issue = BScanIssueFactory.create(scanIssue);
+        BScanIssue issue = BScanIssueFactory.create(scanIssue, callbacks);
         wss.sendToAll(gson.toJson(issue));
     }
 

@@ -13,4 +13,5 @@ public class BHttpRequest extends BSocketMessage {
     public HashMap<String, String> headers;
     public byte[] body;
     public byte[] raw;
+    public boolean inScope;
 }

@@ -1,13 +1,16 @@
 package burp;
 
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
+import java.net.URL;
 
 public class BHttpResponseFactory {
 
-    public static BHttpResponse create(IHttpRequestResponse response, IResponseInfo responseInfo) {
+    public static BHttpResponse create(IHttpRequestResponse response, IResponseInfo responseInfo,
+                                       IBurpExtenderCallbacks callbacks) {
         int bodyOffset = responseInfo.getBodyOffset();
         byte[] rawResponse = response.getResponse();
         byte[] rawBody = Arrays.copyOfRange(rawResponse, bodyOffset, rawResponse.length);
@@ -47,7 +50,11 @@ public class BHttpResponseFactory {
         resp.protocol = service.getProtocol();
         resp.comment = response.getComment();
         resp.highlight = response.getHighlight();
-
-        return resp;
+        try {
+            resp.inScope = callbacks.isInScope(new URL(resp.protocol, resp.host, resp.port, "/"));
+        } catch (MalformedURLException e) {
+            resp.inScope = false;
+        }
+            return resp;
     }
 }

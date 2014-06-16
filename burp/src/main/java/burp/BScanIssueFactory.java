@@ -1,10 +1,11 @@
 package burp;
 
+import java.util.List;
 
 public class BScanIssueFactory {
 
     // TODO: Build HTTP requests/response.
-    public static BScanIssue create(IScanIssue scanIssue) {
+    public static BScanIssue create(IScanIssue scanIssue, IBurpExtenderCallbacks callbacks) {
         BScanIssue issue = new BScanIssue();
         IHttpService service = scanIssue.getHttpService();
         issue.messageType = "scanIssue";
@@ -20,6 +21,7 @@ public class BScanIssueFactory {
         issue.remediationBackground = scanIssue.getRemediationBackground();
         issue.issueDetail = scanIssue.getIssueDetail();
         issue.remediationDetail = scanIssue.getRemediationDetail();
+        issue.inScope = callbacks.isInScope(scanIssue.getUrl());
         return issue;
     }
 }
