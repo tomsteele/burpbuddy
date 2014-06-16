@@ -9,28 +9,22 @@ var util = require('util');
 
 // few defaults
 argv._[0] = argv._[0] || 'example';
-argv._[1] = argv._[1] || '.*';
 
 var db = level(argv._[0] + '.db');
-var scope = new RegExp(".*(" + argv._[1].replace(/\./g, '\\\.') + ").*");
-
-console.log("SCOPE: " + scope);
-var inScope = function(url){
-  return scope.test(url);
-};
 
 var hash = function(input){
       return crypto.createHash('sha1').update(input).digest('hex').toString();
 };
 
-var history = function(url, cb){
+var history = function(obj, cb){
+  var url = obj.url
   var key = hash(url);
   db.get(key, function(err, isNew){
     if(!err && isNew === "true"){
       cb = function(){};
       return cb();
     }
-    else if (inScope(url)){
+    else if (obj.inScope){
       return db.put(key, "true", function(err, val){
         return cb();
       });
@@ -46,7 +40,7 @@ ws.on('open', function() {
 ws.on('message', function(data, flags) {
   var obj = JSON.parse(data);
   if (obj.messageType === 'request' && typeof obj.headers.Cookie !== 'undefined') {
-    history(obj.url, function(){
+    history(obj, function(){
     var req = {
         url: obj.url,
         method: obj.method,
