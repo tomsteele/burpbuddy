@@ -14,14 +14,14 @@ argv._[1] = argv._[1] || '.*';
 var db = level(argv._[0] + '.db');
 var scope = new RegExp(".*(" + argv._[1].replace(/\./g, '\\\.') + ").*");
 
-console.log("SCOPE: " + scope)
+console.log("SCOPE: " + scope);
 var inScope = function(url){
   return scope.test(url);
-}
+};
 
 var hash = function(input){
       return crypto.createHash('sha1').update(input).digest('hex').toString();
-}
+};
 
 var history = function(url, cb){
   var key = hash(url);
@@ -33,9 +33,9 @@ var history = function(url, cb){
     else if (inScope(url)){
       return db.put(key, "true", function(err, val){
         return cb();
-      })
+      });
     }
-  })
+  });
 };
 
 
@@ -59,9 +59,9 @@ ws.on('message', function(data, flags) {
     }
     request(req, function(err, resp, body) {
         fs.appendFileSync(argv._[0] + '.rpt', '\n' + resp.statusCode + " Hash: " + hash(resp.body) + " " + req.method + " " + obj.url);
-        fs.appendFileSync(argv._[0] + '.log', util.inspect({ "Code": resp.statusCode, "URL":req.url, "Hash": hash(body), "Request": req, "Response": resp}))
+        fs.appendFileSync(argv._[0] + '.log', util.inspect({ "Code": resp.statusCode, "URL":req.url, "Hash": hash(body), "Request": req, "Response": resp}));
         if (resp.statusCode < 300 && !err ) {
-        fs.appendFileSync(argv._[0] + '.issues', '-'+ "\nWARNING: " + hash(resp.body) + '\nWARNING: ' + resp.statusCode + " " + req.method + " " + obj.url)
+        fs.appendFileSync(argv._[0] + '.issues', '-'+ "\nWARNING: " + hash(resp.body) + '\nWARNING: ' + resp.statusCode + " " + req.method + " " + obj.url);
         console.log('-'+ "\nWARNING: " + hash(resp.body) + '\nWARNING: ' + resp.statusCode + " " + req.method + " " + obj.url);
         }
     });
