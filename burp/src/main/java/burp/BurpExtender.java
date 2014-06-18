@@ -191,30 +191,22 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     public void restoreConfig()
     {
         stdout.println("Restore Config called");
-        if (callbacks.loadExtensionSetting("save") == null || callbacks.loadExtensionSetting("save").equals("0"))
-        {
+        if (callbacks.loadExtensionSetting("save") == null || callbacks.loadExtensionSetting("save").equals("0")) {
             restoreDefaults();
-        }
-        else
-        {
+        } else {
             
-            if (this.callbacks.loadExtensionSetting("port") != null)
-            {
+            if (this.callbacks.loadExtensionSetting("port") != null) {
                 port = Integer.parseInt(this.callbacks.loadExtensionSetting("port"));
-            }
-            else
-            {
+            } else {
                 port = DEFAULT_PORT;
             }
             portField.setText(String.valueOf(port));
 
 
-            if (this.callbacks.loadExtensionSetting("ip") != null)
-            {
+            if (this.callbacks.loadExtensionSetting("ip") != null) {
                 ip = this.callbacks.loadExtensionSetting("ip");
             }
-            else
-            {
+            else {
                 ip = DEFAULT_IP;
             }
             interfaceField.setText(ip);
