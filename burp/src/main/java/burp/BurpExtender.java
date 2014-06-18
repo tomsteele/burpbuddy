@@ -130,8 +130,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                             BHttpRequest.class);
                     // Set the request burp sends to server by building a header list and from the possibly modified
                     // request body.
-                    // TODO: There should probably be a bit more logic as to how this request gets modified
-                    // since there are multiple ways to modify a request.
                     requestResponse.setRequest(helpers.buildHttpMessage(modifiedHttpRequest.headersToList(),
                             modifiedHttpRequest.body));
                     // Set the host, port, and protocol burp uses for the request sent to server.

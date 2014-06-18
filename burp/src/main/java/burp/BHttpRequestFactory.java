@@ -3,6 +3,7 @@ package burp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
+import java.net.URL;
 
 public class BHttpRequestFactory {
 
@@ -24,9 +25,17 @@ public class BHttpRequestFactory {
             }
         }
 
+        String[] firstHeader = allHeaders.get(0).split(" ");
+        if (firstHeader.length == 3) {
+            req.httpVersion = firstHeader[2].trim();
+        }
+
+        URL url = requestInfo.getUrl();
+
         req.messageType = "request";
         req.method = requestInfo.getMethod();
-        req.url = requestInfo.getUrl().toString();
+        req.path = url.getPath();
+        req.url = url.toString();
         req.headers = headerMap;
         req.raw = rawRequest;
         req.body = rawBody;
