@@ -11,6 +11,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.GroupLayout;
 
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener,
@@ -25,6 +28,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     private IBurpExtenderCallbacks callbacks;
     private JPanel panel;
     private JScrollPane scroll;
+
+    // Defaults
+    private final int DEFAULT_PORT = 8000;
+
+    // Settings
+    private JTextField portField;
+    private JTextField interfaceField;
 
 
     @Override
@@ -54,6 +64,30 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                 panel = new JPanel();
                 scroll = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
                 scroll.setBorder(BorderFactory.createEmptyBorder());
+
+                JLabel portLabel = new JLabel("Port");
+                JLabel interfaceLabel = new JLabel("Interface");
+                portField = new JTextField("8000");
+                interfaceField = new JTextField("127.0.0.1");
+
+                GroupLayout layout = new GroupLayout(panel);
+                panel.setLayout(layout);
+                layout.setAutoCreateGaps(true);
+                layout.setAutoCreateContainerGaps(true);
+                GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
+
+                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(portLabel));
+                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(portField));
+                layout.setHorizontalGroup(hGroup);
+
+                GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
+
+                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(interfaceLabel).addComponent(interfaceField));
+                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(portLabel).addComponent(portField));
+
+                layout.setVerticalGroup(vGroup);
+
+                callbacks.customizeUiComponent(scroll);
 
                 // add the custom tab to Burp's UI
                 callbacks.addSuiteTab(BurpExtender.this);
