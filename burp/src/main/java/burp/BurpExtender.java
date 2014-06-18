@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JSeparator;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.mashape.unirest.http.Unirest;
@@ -39,12 +40,15 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     // Defaults
     private final int DEFAULT_PORT = 8000;
     private final String DEFAULT_IP = "127.0.0.1";
+    private final String DEFAULT_REQUEST_HOOK_URL = "http://localhost:3001/request";
 
     // Settings
     private JTextField portField;
     private JTextField interfaceField;
+    private JTextField requestHookURLField;
     public int port;
     public String ip;
+    public String requestHookURL;
 
 
     @Override
@@ -65,10 +69,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                 scroll = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
                 scroll.setBorder(BorderFactory.createEmptyBorder());
 
-                JLabel portLabel = new JLabel("Port");
-                JLabel interfaceLabel = new JLabel("Interface");
-                portField = new JTextField(Integer.toString(DEFAULT_PORT));
-                interfaceField = new JTextField(DEFAULT_IP);
+                JLabel shLabel = new JLabel("Request Service URL");
+
+                JLabel portLabel = new JLabel("WebSocket Port");
+                JLabel interfaceLabel = new JLabel("WebSocket Interface");
+                portField = new JTextField(Integer.toString(port));
+                interfaceField = new JTextField(ip);
+                requestHookURLField = new JTextField(requestHookURL);
 
                 JButton saveButton = new JButton("Save Settings");
                 saveButton.addActionListener(new ActionListener()
@@ -87,14 +94,14 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                 layout.setAutoCreateContainerGaps(true);
                 GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
 
-                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(portLabel).addComponent(saveButton));
-                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(portField));
+                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(portLabel).addComponent(shLabel).addComponent(saveButton));
+                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(portField).addComponent(requestHookURLField));
                 layout.setHorizontalGroup(hGroup);
 
                 GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
-
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(interfaceLabel).addComponent(interfaceField));
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(portLabel).addComponent(portField));
+                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(shLabel).addComponent(requestHookURLField));
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(saveButton));
 
                 layout.setVerticalGroup(vGroup);
@@ -119,7 +126,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             try {
                 // TODO: Place URL into settings
                 // Send request to service hook URL.
-                HttpResponse<JsonNode> modRequestResponse = Unirest.post("http://localhost:3001/request")
+                HttpResponse<JsonNode> modRequestResponse = Unirest.post(requestHookURL)
                         .header("accept", "application/json")
                         .header("content-type", "application/json")
                         .body(gson.toJson(req))
@@ -187,10 +194,12 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         portField.setText(String.valueOf(port));
 
         ip = interfaceField.getText();
+        requestHookURL = requestHookURLField.getText();
 
         this.callbacks.saveExtensionSetting("save", "1");
         this.callbacks.saveExtensionSetting("port", Integer.toString(port));
         this.callbacks.saveExtensionSetting("ip", ip); 
+        this.callbacks.saveExtensionSetting("requestHookURL", requestHookURL); 
 
         // Restart WSS
         stopWSS();
@@ -220,6 +229,14 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             }
             interfaceField.setText(ip);
 
+            if (this.callbacks.loadExtensionSetting("requestHookURL") != null) {
+                requestHookURL = this.callbacks.loadExtensionSetting("requestHookURL");
+            }
+            else {
+                requestHookURL = DEFAULT_REQUEST_HOOK_URL;
+            }
+            requestHookURLField.setText(requestHookURL);
+
             startWSS();
             callbacks.registerExtensionStateListener(this);
             callbacks.registerHttpListener(this);
@@ -234,6 +251,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         
         port = DEFAULT_PORT;
         ip = DEFAULT_IP;
+        requestHookURL = DEFAULT_REQUEST_HOOK_URL;
     }
 
     public void stopWSS() 
