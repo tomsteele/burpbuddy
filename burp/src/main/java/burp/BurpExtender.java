@@ -124,7 +124,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             wss.sendToAll(gson.toJson(req));
 
             try {
-                // TODO: Place URL into settings
                 // Send request to service hook URL.
                 HttpResponse<JsonNode> modRequestResponse = Unirest.post(requestHookURL)
                         .header("accept", "application/json")
