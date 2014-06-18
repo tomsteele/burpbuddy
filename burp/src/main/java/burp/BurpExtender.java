@@ -67,8 +67,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
                 JLabel portLabel = new JLabel("Port");
                 JLabel interfaceLabel = new JLabel("Interface");
-                portField = new JTextField("8000");
-                interfaceField = new JTextField("127.0.0.1");
+                portField = new JTextField(Integer.toString(DEFAULT_PORT));
+                interfaceField = new JTextField(DEFAULT_IP);
 
                 JButton saveButton = new JButton("Save Settings");
                 saveButton.addActionListener(new ActionListener()
@@ -176,7 +176,18 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
     public void saveConfig()
     {
-        port = Integer.parseInt(portField.getText());
+        try {
+            port = Integer.parseInt(portField.getText());
+            if (port < 0 || port > 65535) {
+                stderr.println("Invalid port, using default.");
+                port = DEFAULT_PORT;
+            }
+        } catch (NumberFormatException e) {
+            stderr.println("Invalid port, using default.");
+            port = DEFAULT_PORT;
+        }
+        portField.setText(String.valueOf(port));
+
         ip = interfaceField.getText();
 
         this.callbacks.saveExtensionSetting("save", "1");
