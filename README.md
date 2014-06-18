@@ -12,7 +12,7 @@ My buddy
 1. copy burpbuddy-0.1-SNAPSHOT.jar where/you/put/burp/stuff
 
 ## Request hook
-An URL can be configured to to hook into burp's request processing. On every request, this URL will receive a POST containing a JSON body exactly like in the socket stream. A JSON response is expected from this request with the exact same fields. Certain fields can be modified to alter the request before burp sends it along to the server. The following fields can be used to modify the request:
+A URL can be configured to to hook into burp's request processing. On every request, this URL will receive a POST containing a JSON body exactly like in the socket stream. A JSON response is expected from this request with the exact same fields. Certain fields can be modified to alter the request before burp sends it along to the server. The following fields can be used to modify the request:
 ```
 host
 port
