@@ -5,10 +5,16 @@ import java.lang.InterruptedException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import com.google.gson.Gson;
+import java.awt.Component;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.BorderFactory;
 
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener,
-        IHttpListener, IScannerListener, IProxyListener {
+        IHttpListener, IScannerListener, IProxyListener, ITab {
     static final String NAME = "Burp Buddy";
 
     private EventServer wss;
@@ -17,9 +23,12 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     private PrintWriter stdout;
     private PrintWriter stderr;
     private IBurpExtenderCallbacks callbacks;
+    private JPanel panel;
+    private JScrollPane scroll;
+
 
     @Override
-    public void registerExtenderCallbacks (IBurpExtenderCallbacks callbacks) {
+    public void registerExtenderCallbacks (final IBurpExtenderCallbacks callbacks) {
         this.callbacks = callbacks;
         callbacks.setExtensionName(NAME);
         stdout = new PrintWriter(callbacks.getStdout(), true);
@@ -35,6 +44,21 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         callbacks.registerExtensionStateListener(this);
         callbacks.registerHttpListener(this);
         callbacks.registerScannerListener(this);
+
+        // create our UI
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                panel = new JPanel();
+                scroll = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                scroll.setBorder(BorderFactory.createEmptyBorder());
+
+                // add the custom tab to Burp's UI
+                callbacks.addSuiteTab(BurpExtender.this);
+            }
+        });
     }
 
     @Override
@@ -74,5 +98,15 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             stderr.println("Exception when stopping WebSocket server");
             stderr.println(e.getMessage());
         }
+    }
+
+    @Override public String getTabCaption()
+    {
+        return "Burp Buddy";
+    }
+
+    @Override public Component getUiComponent()
+    {
+        return scroll;
     }
 }
