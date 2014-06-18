@@ -4,6 +4,8 @@
   "description": "Burp Buddy node.js examples",
   "license": "MIT",
   "dependencies": {
+    "hapi": "^6.0.2",
+    "joi": "^4.6.1",
     "level": "^0.18.0",
     "request": "^2.36.0",
     "ws": "^0.4.31"
