@@ -52,8 +52,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         stdout = new PrintWriter(callbacks.getStdout(), true);
         stderr = new PrintWriter(callbacks.getStderr(), true);
         helpers = callbacks.getHelpers();
-        //String ip = "127.0.0.1";
-        //int port =  8000;
 
         // create our UI
         SwingUtilities.invokeLater(new Runnable()
@@ -69,28 +67,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                 JLabel interfaceLabel = new JLabel("Interface");
                 portField = new JTextField("8000");
                 interfaceField = new JTextField("127.0.0.1");
-
-
-                portField.addPropertyChangeListener("value", new PropertyChangeListener()
-                {
-                    @Override public void propertyChange(PropertyChangeEvent evt)
-                    {
-                        stdout.println("port changed");
-                        port = Integer.parseInt(portField.getText());
-                    }
-                });
-                
-                /*
-                interfaceField.addPropertyChangeListener("value", new PropertyChangeListener()
-                {
-                    @Override public void propertyChange(PropertyChangeEvent evt)
-                    {
-                        stdout.println("ip changed");
-                        ip = interfaceField.getText();
-                    }
-                });
-                */
-
 
                 JButton saveButton = new JButton("Save Settings");
                 saveButton.addActionListener(new ActionListener()
@@ -172,6 +148,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
     public void saveConfig()
     {
+        port = Integer.parseInt(portField.getText());
+        ip = interfaceField.getText();
+
         this.callbacks.saveExtensionSetting("save", "1");
         this.callbacks.saveExtensionSetting("port", Integer.toString(port));
         this.callbacks.saveExtensionSetting("ip", ip); 
