@@ -17,8 +17,6 @@ import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener,
