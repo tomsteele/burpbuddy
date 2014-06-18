@@ -1,12 +1,12 @@
 package burp;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.InterruptedException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import com.google.gson.Gson;
 import java.awt.Component;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -17,6 +17,10 @@ import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.exceptions.UnirestException;
 
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener,
@@ -111,6 +115,33 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                     callbacks);
 
             wss.sendToAll(gson.toJson(req));
+
+            try {
+                // TODO: Place URL into settings
+                // Send request to service hook URL.
+                HttpResponse<JsonNode> modRequestResponse = Unirest.post("http://localhost:3001/request")
+                        .header("accept", "application/json")
+                        .header("content-type", "application/json")
+                        .body(gson.toJson(req))
+                        .asJson();
+                if (modRequestResponse.getCode() == 200) {
+                    // Build a BHttpRequest from the JSON response.
+                    BHttpRequest modifiedHttpRequest = gson.fromJson(new InputStreamReader(modRequestResponse.getRawBody()),
+                            BHttpRequest.class);
+                    // Set the request burp sends to server by building a header list and from the possibly modified
+                    // request body.
+                    // TODO: There should probably be a bit more logic as to how this request gets modified
+                    // since there are multiple ways to modify a request.
+                    requestResponse.setRequest(helpers.buildHttpMessage(modifiedHttpRequest.headersToList(),
+                            modifiedHttpRequest.body));
+                    // Set the host, port, and protocol burp uses for the request sent to server.
+                    requestResponse.setHttpService(helpers.buildHttpService(modifiedHttpRequest.host,
+                            modifiedHttpRequest.port, modifiedHttpRequest.protocol));
+                }
+            } catch (UnirestException e) {
+                // Do nothing.
+            }
+
         } else {
             BHttpResponse resp = BHttpResponseFactory.create(requestResponse,
                     helpers.analyzeResponse(requestResponse.getResponse()), callbacks);
@@ -120,7 +151,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
     @Override
     public void processProxyMessage(boolean messageIsRequest, IInterceptedProxyMessage message) {
-
     }
 
     @Override
