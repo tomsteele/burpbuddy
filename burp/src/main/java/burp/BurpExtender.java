@@ -73,9 +73,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
                 JLabel portLabel = new JLabel("WebSocket Port");
                 JLabel interfaceLabel = new JLabel("WebSocket Interface");
-                portField = new JTextField(Integer.toString(port));
-                interfaceField = new JTextField(ip);
-                requestHookURLField = new JTextField(requestHookURL);
+                portField = new JTextField(Integer.toString(DEFAULT_PORT));
+                interfaceField = new JTextField(DEFAULT_IP);
+                requestHookURLField = new JTextField(DEFAULT_REQUEST_HOOK_URL);
 
                 JButton saveButton = new JButton("Save Settings");
                 saveButton.addActionListener(new ActionListener()
