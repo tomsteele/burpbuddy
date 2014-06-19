@@ -1,7 +1,7 @@
 burpbuddy
 =========
 
-My buddy
+burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API over the network through various mediums, with the goal of enabling development in any language without the restrictions of the JVM. See the documentation below and [examples](https://github.com/liftsecurity/burpbuddy/tree/master/examples) for more information.
 
 ## Status
 Heavy development, nothing should be depended upon as stable, things will likely change.
@@ -18,7 +18,8 @@ Heavy development, nothing should be depended upon as stable, things will likely
 A WebSocket server is available to ingest streaming events from burp. Currently this includes requests, responses, and scan issues. Use the `messageType` field to distinguish between each of these.
 
 ### Messages
-#### Request
+All messages are sent as JSON.
+#### request
 - host (string)
 - port (int)
 - protocol (string)
@@ -30,17 +31,47 @@ A WebSocket server is available to ingest streaming events from burp. Currently 
 - body (array) - byte array of the request body
 - raw (array) - byte array of the entire request
 - inScope (bool) - true if the url is in the current burp scope
+- highlight (string)
+- comment (string)
+- messageType (string) - set to `request`
 
+#### response
+- host (string)
+- port (int)
+- protocol (string)
+- headers (object) - key/value pairs of strings
+- cookies (array) - array of cookie objects
+- mimeType (string)
+- body (array) - byte array of the response body
+- raw (array) - byte array of the entire response
+- inScope (bool) - true if url is in the current burp scope
+- highlight (string)
+- comment (string)
+- messageType (string) - set to `response`
+
+#### scanIssue
+- host (string)
+- port (int)
+- protocol (string)
+- name (string)
+- issueType (int)
+- severity (string)
+- confidence (string)
+- issueBackground (string)
+- remediationBackground (string)
+- issueDetail (string)
+- remediationDetail (string)
+- inScope (bool) - true if url is in the current burp scope
+- messageType (string) - set to `scanIssue`
 
 ## Request hook
 A URL can be configured to hook into burp's request processing. On every request, this URL will receive a POST containing a JSON body exactly like in the socket stream. A JSON response is expected from this request with the exact same fields. Certain fields can be modified to alter the request before burp sends it along to the server. The following fields can be used to modify the request:
-```
-host
-port
-protocol
-httpVersion
-method
-path
-headers
-body
-```
+
+- host
+- port
+- protocol
+- httpVersion
+- method
+- path
+- headers
+- body
