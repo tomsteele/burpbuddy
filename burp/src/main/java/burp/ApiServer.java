@@ -23,6 +23,13 @@ public class ApiServer {
             }
             return gson.toJson(issues);
         });
+
+        post("/scanissues", (request, response) -> {
+            BScanIssue issue = gson.fromJson(request.body(), BScanIssue.class);
+            callbacks.addScanIssue(issue);
+            response.status(201);
+            return gson.toJson(issue);
+        });
     }
 
     public void stopServer() {
