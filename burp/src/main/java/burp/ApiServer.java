@@ -97,6 +97,19 @@ public class ApiServer {
             }
         });
 
+        get("/jar", (request, response) -> {
+            List<BCookie> cookies = new ArrayList<>();
+            for (ICookie burpCookie: callbacks.getCookieJarContents()) {
+                BCookie cookie = new BCookie();
+                cookie.experation = burpCookie.getExpiration();
+                cookie.domain = burpCookie.getDomain();
+                cookie.name = burpCookie.getName();
+                cookie.value = burpCookie.getValue();
+                cookies.add(cookie);
+            }
+            return gson.toJson(cookies);
+        });
+
     }
 
     public void stopServer() {
