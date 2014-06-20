@@ -9,7 +9,7 @@ import java.net.URL;
 
 public class BHttpResponseFactory {
 
-    public static BHttpResponse create(IHttpRequestResponse response, IResponseInfo responseInfo,
+    public static BHttpResponse create(int toolFlag, IHttpRequestResponse response, IResponseInfo responseInfo,
                                        IBurpExtenderCallbacks callbacks) {
         int bodyOffset = responseInfo.getBodyOffset();
         byte[] rawResponse = response.getResponse();
@@ -38,6 +38,7 @@ public class BHttpResponseFactory {
             cookies.add(bcookie);
         }
 
+        resp.toolFlag = toolFlag;
         resp.messageType = "response";
         resp.raw = rawResponse;
         resp.body = rawBody;

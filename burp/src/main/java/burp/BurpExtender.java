@@ -121,9 +121,8 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
     @Override
     public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse requestResponse) {
-
         if (messageIsRequest) {
-            BHttpRequest req = BHttpRequestFactory.create(requestResponse, helpers.analyzeRequest(requestResponse),
+            BHttpRequest req = BHttpRequestFactory.create(toolFlag, requestResponse, helpers.analyzeRequest(requestResponse),
                     callbacks);
 
             wss.sendToAll(gson.toJson(req));
@@ -154,7 +153,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             }
 
         } else {
-            BHttpResponse resp = BHttpResponseFactory.create(requestResponse,
+            BHttpResponse resp = BHttpResponseFactory.create(toolFlag, requestResponse,
                     helpers.analyzeResponse(requestResponse.getResponse()), callbacks);
             wss.sendToAll(gson.toJson(resp));
 

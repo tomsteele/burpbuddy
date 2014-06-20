@@ -17,6 +17,7 @@ public class BHttpRequest extends BSocketMessage {
     public byte[] body;
     public byte[] raw;
     public boolean inScope;
+    public int toolFlag = 0x00004242;
 
 
     public List<String> headersToList() {

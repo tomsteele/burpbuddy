@@ -7,7 +7,7 @@ import java.net.URL;
 
 public class BHttpRequestFactory {
 
-    public static BHttpRequest create(IHttpRequestResponse request, IRequestInfo requestInfo, IBurpExtenderCallbacks callbacks) {
+    public static BHttpRequest create(int toolFlag, IHttpRequestResponse request, IRequestInfo requestInfo, IBurpExtenderCallbacks callbacks) {
         int bodyOffset = requestInfo.getBodyOffset();
         byte[] rawRequest = request.getRequest();
         byte[] rawBody = Arrays.copyOfRange(rawRequest, bodyOffset, rawRequest.length);
@@ -31,7 +31,7 @@ public class BHttpRequestFactory {
         }
 
         URL url = requestInfo.getUrl();
-
+        req.toolFlag = toolFlag;
         req.messageType = "request";
         req.method = requestInfo.getMethod();
         req.path = url.getPath();
