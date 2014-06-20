@@ -192,6 +192,38 @@ public class ApiServer {
             return "";
         });
 
+        get("/sitemap", (request, response) -> {
+            List<BHttpRequestResponse> pairs = new ArrayList<>();
+            for (IHttpRequestResponse requestResponse: callbacks.getSiteMap("")) {
+                pairs.add(BHttpRequestResponseFactory.create(requestResponse, callbacks, helpers));
+            }
+            return gson.toJson(pairs);
+        });
+
+        get("/sitemap/:url", (request, response) -> {
+            byte[] encodedBytes = Base64.decodeBase64(request.params("url"));
+            List<BHttpRequestResponse> pairs = new ArrayList<>();
+            for (IHttpRequestResponse requestResponse: callbacks.getSiteMap(new String(encodedBytes))) {
+                pairs.add(BHttpRequestResponseFactory.create(requestResponse, callbacks, helpers));
+            }
+            return gson.toJson(pairs);
+        });
+
+        post("/sitemap", (request, response) -> {
+            BHttpRequestResponse bHttpRequestResponse = gson.fromJson(request.body(), BHttpRequestResponse.class);
+            callbacks.addToSiteMap(bHttpRequestResponse);
+            response.status(201);
+            return gson.toJson(bHttpRequestResponse);
+        });
+
+        get("/proxyhistory", (request, resposne) -> {
+            List<BHttpRequestResponse> pairs = new ArrayList<>();
+            for (IHttpRequestResponse requestResponse: callbacks.getProxyHistory()) {
+                pairs.add(BHttpRequestResponseFactory.create(requestResponse, callbacks, helpers));
+            }
+            return gson.toJson(pairs);
+        });
+
     }
 
     public void stopServer() {
