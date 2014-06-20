@@ -152,6 +152,24 @@ public class ApiServer {
             return gson.toJson(message);
         });
 
+        post("/send/:tool", (request, response) -> {
+            String tool = request.params("tool");
+            BScanMessage message = gson.fromJson(request.body(), BScanMessage.class);
+            switch (tool) {
+                case "intruder":
+                    callbacks.sendToIntruder(message.host, message.port, message.useHttps, message.request);
+                    response.status(201);
+                    break;
+                case "repeater":
+                    callbacks.sendToRepeater(message.host, message.port, message.useHttps, message.request, "buddy");
+                    response.status(201);
+                    break;
+                default:
+                    response.status(404);
+                    break;
+            }
+            return "";
+        });
 
     }
 
