@@ -23,6 +23,13 @@ public class ApiServer {
 
         Gson gson = new Gson();
 
+        before((request, response) -> {
+            String contentType = request.headers("content-type");
+            if (contentType == null || !contentType.contains("application/json")) {
+                halt(400);
+            }
+        });
+
         get("/scope/:url", (request, response) -> {
             try {
                 URL url = new URL(new String(Base64.decodeBase64(request.params("url"))));
