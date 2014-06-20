@@ -2,6 +2,7 @@ package burp;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.net.URL;
 import org.apache.commons.codec.binary.Base64;
@@ -110,6 +111,32 @@ public class ApiServer {
             return gson.toJson(cookies);
         });
 
+        post("/jar", (request, response) -> {
+            BCookie cookie = gson.fromJson(request.body(), BCookie.class);
+            callbacks.updateCookieJar(new ICookie() {
+                @Override
+                public String getDomain() {
+                    return cookie.domain;
+                }
+
+                @Override
+                public Date getExpiration() {
+                    return cookie.experation;
+                }
+
+                @Override
+                public String getName() {
+                    return cookie.name;
+                }
+
+                @Override
+                public String getValue() {
+                    return cookie.value;
+                }
+            });
+            response.status(201);
+            return gson.toJson(cookie);
+        });
     }
 
     public void stopServer() {
