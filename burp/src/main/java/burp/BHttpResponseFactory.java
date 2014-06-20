@@ -55,6 +55,6 @@ public class BHttpResponseFactory {
         } catch (MalformedURLException e) {
             resp.inScope = false;
         }
-            return resp;
+        return resp;
     }
 }
