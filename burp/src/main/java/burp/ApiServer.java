@@ -1,7 +1,9 @@
 package burp;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.net.URL;
 import org.apache.commons.codec.binary.Base64;
 import com.google.gson.Gson;
 import static spark.Spark.*;
@@ -15,6 +17,22 @@ public class ApiServer {
         setIpAddress(ip);
 
         Gson gson = new Gson();
+
+        get("/scope/:url", (request, response) -> {
+            try {
+                URL url = new URL(new String(Base64.decodeBase64(request.params("url"))));
+                if (callbacks.isInScope(url)) {
+                    response.status(200);
+                    return "";
+                } else {
+                    response.status(404);
+                    return "";
+                }
+            } catch (MalformedURLException e) {
+                response.status(400);
+                return "";
+            }
+        });
 
         get("/scanissues", (request, response) -> {
             IScanIssue[] rawIssues =  callbacks.getScanIssues("");
