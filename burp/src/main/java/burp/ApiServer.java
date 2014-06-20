@@ -137,6 +137,22 @@ public class ApiServer {
             response.status(201);
             return gson.toJson(cookie);
         });
+
+        post("/scan/active", (request, response) -> {
+            BScanMessage message = gson.fromJson(request.body(), BScanMessage.class);
+            callbacks.doActiveScan(message.host, message.port, message.useHttps, message.request);
+            response.status(201);
+            return gson.toJson(message);
+        });
+
+        post("/scan/passive", (request, response) -> {
+            BScanMessage message = gson.fromJson(request.body(), BScanMessage.class);
+            callbacks.doPassiveScan(message.host, message.port, message.useHttps, message.request, message.response);
+            response.status(201);
+            return gson.toJson(message);
+        });
+
+
     }
 
     public void stopServer() {
