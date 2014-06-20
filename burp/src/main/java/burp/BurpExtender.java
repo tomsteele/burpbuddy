@@ -15,8 +15,6 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.HttpResponse;
@@ -28,6 +26,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     static final String NAME = "Burp Buddy";
 
     private EventServer wss;
+    private ApiServer httpApi;
     private Gson gson = new Gson();
     private IExtensionHelpers helpers;
     private PrintWriter stdout;
@@ -37,17 +36,21 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     private JScrollPane scroll;
 
     // Defaults
-    private final int DEFAULT_PORT = 8000;
+    private final int WSS_DEFAULT_PORT = 8000;
+    private final int HTTPAPI_DEFAULT_PORT = 8001;
     private final String DEFAULT_IP = "127.0.0.1";
     private final String DEFAULT_REQUEST_HOOK_URL = "http://localhost:3001/request";
     private final String DEFAULT_RESPONSE_HOOK_URL = "http://localhost:3001/response";
 
     // Settings
-    private JTextField portField;
+    private JTextField httpPortField;
+    private JTextField wssPortField;
     private JTextField interfaceField;
     private JTextField requestHookURLField;
     private JTextField responseHookURLField;
-    public int port;
+    
+    public int wssPort;
+    public int httpPort;
     public String ip;
     public String requestHookURL;
     public String responseHookURL;
@@ -62,34 +65,28 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         helpers = callbacks.getHelpers();
 
         // Create our UI.
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            @Override
-            public void run()
-            {
+        SwingUtilities.invokeLater(() -> {
                 panel = new JPanel();
                 scroll = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
                 scroll.setBorder(BorderFactory.createEmptyBorder());
 
                 JLabel requestHookLabel = new JLabel("Request Service URL");
                 JLabel responseHookLabel = new JLabel("Response Service URL");
+                JLabel wssPortLabel = new JLabel("WebSocket Port");
+                JLabel httpPortLabel = new JLabel("HTTP API Port");
+                JLabel interfaceLabel = new JLabel("Interface");
 
-                JLabel portLabel = new JLabel("WebSocket Port");
-                JLabel interfaceLabel = new JLabel("WebSocket Interface");
-                portField = new JTextField(Integer.toString(DEFAULT_PORT));
+                httpPortField = new JTextField(Integer.toString(HTTPAPI_DEFAULT_PORT));
+                wssPortField = new JTextField(Integer.toString(WSS_DEFAULT_PORT));
                 interfaceField = new JTextField(DEFAULT_IP);
                 requestHookURLField = new JTextField(DEFAULT_REQUEST_HOOK_URL);
                 responseHookURLField = new JTextField(DEFAULT_RESPONSE_HOOK_URL);
 
                 JButton saveButton = new JButton("Save Settings");
-                saveButton.addActionListener(new ActionListener()
-                {
-                    @Override public void actionPerformed(ActionEvent e)
-                    {
-                        stdout.println("saving config");
-                        saveConfig();
-                    }
-                });        
+                saveButton.addActionListener((e) -> {
+                    stdout.println("saving config");
+                    saveConfig();
+                });
 
                 // Layout all the things.
                 GroupLayout layout = new GroupLayout(panel);
@@ -98,15 +95,16 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                 layout.setAutoCreateContainerGaps(true);
                 GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
 
-                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(portLabel)
+                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(httpPortLabel).addComponent(wssPortLabel)
                         .addComponent(requestHookLabel).addComponent(responseHookLabel).addComponent(saveButton));
-                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(portField)
-                        .addComponent(requestHookURLField).addComponent(responseHookURLField));
+                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(httpPortField)
+                        .addComponent(wssPortField).addComponent(requestHookURLField).addComponent(responseHookURLField));
                 layout.setHorizontalGroup(hGroup);
 
                 GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(interfaceLabel).addComponent(interfaceField));
-                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(portLabel).addComponent(portField));
+                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(httpPortLabel).addComponent(httpPortField));
+                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(wssPortLabel).addComponent(wssPortField));
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(requestHookLabel).addComponent(requestHookURLField));
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(responseHookLabel).addComponent(responseHookURLField));
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(saveButton));
@@ -118,7 +116,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
                 // Add the custom tab to Burp's UI.
                 callbacks.addSuiteTab(BurpExtender.this);
-            }
         });
     }
 
@@ -200,11 +197,12 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     @Override
     public void extensionUnloaded() {
         stopWSS();
+        stopHTTP();
     }
 
     @Override public String getTabCaption()
     {
-        return "Burp Buddy";
+        return NAME;
     }
 
     @Override public Component getUiComponent()
@@ -215,23 +213,36 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     public void saveConfig()
     {
         try {
-            port = Integer.parseInt(portField.getText());
-            if (port < 0 || port > 65535) {
-                stderr.println("Invalid port, using default.");
-                port = DEFAULT_PORT;
+           wssPort= Integer.parseInt(wssPortField.getText());
+            if (wssPort < 0 ||wssPort > 65535) {
+                stderr.println("Invalid WSS port, using default.");
+                wssPort= WSS_DEFAULT_PORT;
             }
         } catch (NumberFormatException e) {
-            stderr.println("Invalid port, using default.");
-            port = DEFAULT_PORT;
+            stderr.println("Invalid WSS port, using default.");
+            wssPort= WSS_DEFAULT_PORT;
         }
-        portField.setText(String.valueOf(port));
+        wssPortField.setText(String.valueOf(wssPort));
+
+        try {
+            httpPort= Integer.parseInt(httpPortField.getText());
+            if (httpPort < 0 || httpPort > 65535 || httpPort == wssPort) {
+                stderr.println("Invalid HTTP port, using default.");
+                httpPort = HTTPAPI_DEFAULT_PORT;
+            }
+        } catch (NumberFormatException e) {
+            stderr.println("Invalid HTTP port, using default.");
+            httpPort = HTTPAPI_DEFAULT_PORT;
+        }
+        httpPortField.setText(String.valueOf(httpPort));
 
         ip = interfaceField.getText();
         requestHookURL = requestHookURLField.getText();
         responseHookURL = responseHookURLField.getText();
 
         this.callbacks.saveExtensionSetting("save", "1");
-        this.callbacks.saveExtensionSetting("port", Integer.toString(port));
+        this.callbacks.saveExtensionSetting("httpPort", Integer.toString(httpPort));
+        this.callbacks.saveExtensionSetting("wssPort", Integer.toString(wssPort));
         this.callbacks.saveExtensionSetting("ip", ip); 
         this.callbacks.saveExtensionSetting("requestHookURL", requestHookURL);
         this.callbacks.saveExtensionSetting("responseHookURL", responseHookURL);
@@ -239,6 +250,10 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         // Restart WSS
         stopWSS();
         startWSS();
+
+        // Restart HTTP API
+        stopHTTP();
+        startHTTP();
     }
 
     public void restoreConfig()
@@ -248,13 +263,19 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             restoreDefaults();
         } else {
             
-            if (this.callbacks.loadExtensionSetting("port") != null) {
-                port = Integer.parseInt(this.callbacks.loadExtensionSetting("port"));
+            if (this.callbacks.loadExtensionSetting("wssPort") != null) {
+               wssPort= Integer.parseInt(this.callbacks.loadExtensionSetting("wssPort"));
             } else {
-                port = DEFAULT_PORT;
+               wssPort= WSS_DEFAULT_PORT;
             }
-            portField.setText(String.valueOf(port));
+            wssPortField.setText(String.valueOf(wssPort));
 
+            if (this.callbacks.loadExtensionSetting("httpPort") != null) {
+                httpPort= Integer.parseInt(this.callbacks.loadExtensionSetting("httpPort"));
+            } else {
+                httpPort= HTTPAPI_DEFAULT_PORT;
+            }
+            httpPortField.setText(String.valueOf(httpPort));
 
             if (this.callbacks.loadExtensionSetting("ip") != null) {
                 ip = this.callbacks.loadExtensionSetting("ip");
@@ -279,43 +300,51 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             responseHookURLField.setText(responseHookURL);
 
             startWSS();
+            startHTTP();
+
             callbacks.registerExtensionStateListener(this);
             callbacks.registerHttpListener(this);
             callbacks.registerScannerListener(this);
         }
     }
 
-    public void restoreDefaults()
-    {
+    public void restoreDefaults() {
         stdout.println("Restore Defaults called");
         this.callbacks.saveExtensionSetting("save", "2");
         
-        port = DEFAULT_PORT;
+        wssPort= WSS_DEFAULT_PORT;
+        httpPort = HTTPAPI_DEFAULT_PORT;
         ip = DEFAULT_IP;
         requestHookURL = DEFAULT_REQUEST_HOOK_URL;
         responseHookURL = DEFAULT_RESPONSE_HOOK_URL;
     }
 
-    public void stopWSS() 
-    {
+
+    public void stopWSS() {
         try {
             wss.stop();
             stdout.println("WebSocket server stopped");
-        } catch(IOException e) {
-            stderr.println("Exception when stopping WebSocket server");
-            stderr.println(e.getMessage());
-        } catch(InterruptedException e) {
+        } catch(IOException|InterruptedException e) {
             stderr.println("Exception when stopping WebSocket server");
             stderr.println(e.getMessage());
         }
     }
 
-    public void startWSS()
-    {
-        InetSocketAddress address = new InetSocketAddress(ip, port);
+    public void startWSS() {
+        InetSocketAddress address = new InetSocketAddress(ip, wssPort);
         wss = new EventServer(stdout, stderr, address);
         wss.start();
-        stdout.println("WebSocket server started at ws://" + ip + ":" + port);
+        stdout.println("WebSocket server started at ws://" + ip + ":" + wssPort);
+    }
+
+    public void stopHTTP() {
+        stdout.println("HTTP API server stopped");
+        httpApi.stopServer();
+    }
+
+    public void startHTTP() {
+        stdout.println("HTTP API server started at http://" + ip + ":" + httpPort);
+        httpApi = new ApiServer(ip, httpPort, callbacks);
     }
 
 }
