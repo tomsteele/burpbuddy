@@ -15,7 +15,6 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JSeparator;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.mashape.unirest.http.Unirest;
@@ -41,14 +40,17 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     private final int DEFAULT_PORT = 8000;
     private final String DEFAULT_IP = "127.0.0.1";
     private final String DEFAULT_REQUEST_HOOK_URL = "http://localhost:3001/request";
+    private final String DEFAULT_RESPONSE_HOOK_URL = "http://localhost:3001/response";
 
     // Settings
     private JTextField portField;
     private JTextField interfaceField;
     private JTextField requestHookURLField;
+    private JTextField responseHookURLField;
     public int port;
     public String ip;
     public String requestHookURL;
+    public String responseHookURL;
 
 
     @Override
@@ -59,7 +61,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         stderr = new PrintWriter(callbacks.getStderr(), true);
         helpers = callbacks.getHelpers();
 
-        // create our UI
+        // Create our UI.
         SwingUtilities.invokeLater(new Runnable()
         {
             @Override
@@ -69,13 +71,15 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                 scroll = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
                 scroll.setBorder(BorderFactory.createEmptyBorder());
 
-                JLabel shLabel = new JLabel("Request Service URL");
+                JLabel requestHookLabel = new JLabel("Request Service URL");
+                JLabel responseHookLabel = new JLabel("Response Service URL");
 
                 JLabel portLabel = new JLabel("WebSocket Port");
                 JLabel interfaceLabel = new JLabel("WebSocket Interface");
                 portField = new JTextField(Integer.toString(DEFAULT_PORT));
                 interfaceField = new JTextField(DEFAULT_IP);
                 requestHookURLField = new JTextField(DEFAULT_REQUEST_HOOK_URL);
+                responseHookURLField = new JTextField(DEFAULT_RESPONSE_HOOK_URL);
 
                 JButton saveButton = new JButton("Save Settings");
                 saveButton.addActionListener(new ActionListener()
@@ -87,21 +91,24 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                     }
                 });        
 
-                // Layout all the things
+                // Layout all the things.
                 GroupLayout layout = new GroupLayout(panel);
                 panel.setLayout(layout);
                 layout.setAutoCreateGaps(true);
                 layout.setAutoCreateContainerGaps(true);
                 GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
 
-                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(portLabel).addComponent(shLabel).addComponent(saveButton));
-                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(portField).addComponent(requestHookURLField));
+                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(portLabel)
+                        .addComponent(requestHookLabel).addComponent(responseHookLabel).addComponent(saveButton));
+                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(portField)
+                        .addComponent(requestHookURLField).addComponent(responseHookURLField));
                 layout.setHorizontalGroup(hGroup);
 
                 GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(interfaceLabel).addComponent(interfaceField));
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(portLabel).addComponent(portField));
-                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(shLabel).addComponent(requestHookURLField));
+                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(requestHookLabel).addComponent(requestHookURLField));
+                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(responseHookLabel).addComponent(responseHookURLField));
                 vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(saveButton));
 
                 layout.setVerticalGroup(vGroup);
@@ -109,7 +116,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                 restoreConfig();
                 callbacks.customizeUiComponent(scroll);
 
-                // add the custom tab to Burp's UI
+                // Add the custom tab to Burp's UI.
                 callbacks.addSuiteTab(BurpExtender.this);
             }
         });
@@ -117,6 +124,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
     @Override
     public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse requestResponse) {
+
         if (messageIsRequest) {
             BHttpRequest req = BHttpRequestFactory.create(requestResponse, helpers.analyzeRequest(requestResponse),
                     callbacks);
@@ -124,23 +132,25 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             wss.sendToAll(gson.toJson(req));
 
             try {
-                // Send request to service hook URL.
                 HttpResponse<JsonNode> modRequestResponse = Unirest.post(requestHookURL)
                         .header("accept", "application/json")
                         .header("content-type", "application/json")
                         .body(gson.toJson(req))
                         .asJson();
                 if (modRequestResponse.getCode() == 200) {
-                    // Build a BHttpRequest from the JSON response.
                     BHttpRequest modifiedHttpRequest = gson.fromJson(new InputStreamReader(modRequestResponse.getRawBody()),
                             BHttpRequest.class);
-                    // Set the request burp sends to server by building a header list and from the possibly modified
-                    // request body.
+
                     requestResponse.setRequest(helpers.buildHttpMessage(modifiedHttpRequest.headersToList(),
                             modifiedHttpRequest.body));
-                    // Set the host, port, and protocol burp uses for the request sent to server.
                     requestResponse.setHttpService(helpers.buildHttpService(modifiedHttpRequest.host,
                             modifiedHttpRequest.port, modifiedHttpRequest.protocol));
+                    if (modifiedHttpRequest.comment != null && !modifiedHttpRequest.comment.equals("")) {
+                        requestResponse.setComment(modifiedHttpRequest.comment);
+                    }
+                    if (modifiedHttpRequest.highlight != null && !modifiedHttpRequest.highlight.equals("")) {
+                       requestResponse.setHighlight(modifiedHttpRequest.highlight);
+                    }
                 }
             } catch (UnirestException e) {
                 // Do nothing.
@@ -150,6 +160,30 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             BHttpResponse resp = BHttpResponseFactory.create(requestResponse,
                     helpers.analyzeResponse(requestResponse.getResponse()), callbacks);
             wss.sendToAll(gson.toJson(resp));
+
+            try {
+                HttpResponse<JsonNode> modRequestResponse = Unirest.post(responseHookURL)
+                        .header("accept", "application/json")
+                        .header("content-type", "application/json")
+                        .body(gson.toJson(resp))
+                        .asJson();
+                if(modRequestResponse.getCode() == 200) {
+                    BHttpResponse modifiedHttpResponse = gson.fromJson(new InputStreamReader(modRequestResponse.getRawBody()),
+                            BHttpResponse.class);
+
+                    requestResponse.setResponse(modifiedHttpResponse.raw);
+
+                    if (modifiedHttpResponse.comment != null && !modifiedHttpResponse.comment.equals("")) {
+                        requestResponse.setComment(modifiedHttpResponse.comment);
+                    }
+                    if (modifiedHttpResponse.highlight != null && !modifiedHttpResponse.highlight.equals("")) {
+                        requestResponse.setHighlight(modifiedHttpResponse.highlight);
+                    }
+                }
+
+            } catch (UnirestException e) {
+                // Do nothing.
+            }
         }
     }
 
@@ -194,11 +228,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
         ip = interfaceField.getText();
         requestHookURL = requestHookURLField.getText();
+        responseHookURL = responseHookURLField.getText();
 
         this.callbacks.saveExtensionSetting("save", "1");
         this.callbacks.saveExtensionSetting("port", Integer.toString(port));
         this.callbacks.saveExtensionSetting("ip", ip); 
-        this.callbacks.saveExtensionSetting("requestHookURL", requestHookURL); 
+        this.callbacks.saveExtensionSetting("requestHookURL", requestHookURL);
+        this.callbacks.saveExtensionSetting("responseHookURL", responseHookURL);
 
         // Restart WSS
         stopWSS();
@@ -222,19 +258,25 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
             if (this.callbacks.loadExtensionSetting("ip") != null) {
                 ip = this.callbacks.loadExtensionSetting("ip");
-            }
-            else {
+            } else {
                 ip = DEFAULT_IP;
             }
             interfaceField.setText(ip);
 
             if (this.callbacks.loadExtensionSetting("requestHookURL") != null) {
                 requestHookURL = this.callbacks.loadExtensionSetting("requestHookURL");
-            }
-            else {
+            } else {
                 requestHookURL = DEFAULT_REQUEST_HOOK_URL;
             }
+
+            if (this.callbacks.loadExtensionSetting("responseHookURL") != null) {
+                responseHookURL = this.callbacks.loadExtensionSetting("responseHookURL");
+            } else {
+                responseHookURL = DEFAULT_RESPONSE_HOOK_URL;
+            }
+
             requestHookURLField.setText(requestHookURL);
+            responseHookURLField.setText(responseHookURL);
 
             startWSS();
             callbacks.registerExtensionStateListener(this);
@@ -251,6 +293,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         port = DEFAULT_PORT;
         ip = DEFAULT_IP;
         requestHookURL = DEFAULT_REQUEST_HOOK_URL;
+        responseHookURL = DEFAULT_RESPONSE_HOOK_URL;
     }
 
     public void stopWSS() 
