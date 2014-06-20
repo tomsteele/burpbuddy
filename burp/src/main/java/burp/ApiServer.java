@@ -2,6 +2,7 @@ package burp;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.codec.binary.Base64;
 import com.google.gson.Gson;
 import static spark.Spark.*;
 
@@ -17,6 +18,16 @@ public class ApiServer {
 
         get("/scanissues", (request, response) -> {
             IScanIssue[] rawIssues =  callbacks.getScanIssues("");
+            List<BScanIssue> issues = new ArrayList<>();
+            for (IScanIssue issue : rawIssues) {
+                issues.add(BScanIssueFactory.create(issue, callbacks));
+            }
+            return gson.toJson(issues);
+        });
+
+        get("/scanissues/:url", (request, response) -> {
+            byte[] encodedBytes = Base64.decodeBase64(request.params("url"));
+            IScanIssue[] rawIssues =  callbacks.getScanIssues(new String(encodedBytes));
             List<BScanIssue> issues = new ArrayList<>();
             for (IScanIssue issue : rawIssues) {
                 issues.add(BScanIssueFactory.create(issue, callbacks));
