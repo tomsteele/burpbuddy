@@ -34,6 +34,18 @@ public class ApiServer {
             }
         });
 
+        post("/scope", (request, response) -> {
+            try {
+                BScopeMessage message = gson.fromJson(request.body(), BScopeMessage.class);
+                callbacks.includeInScope(new URL(message.url));
+                response.status(201);
+                return gson.toJson(message);
+            } catch (MalformedURLException e) {
+                response.status(400);
+                return "";
+            }
+        });
+
         get("/scanissues", (request, response) -> {
             IScanIssue[] rawIssues =  callbacks.getScanIssues("");
             List<BScanIssue> issues = new ArrayList<>();
