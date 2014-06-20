@@ -1,10 +1,8 @@
 package burp;
 
-import java.util.List;
 
 public class BScanIssueFactory {
 
-    // TODO: Build HTTP requests/response.
     public static BScanIssue create(IScanIssue scanIssue, IBurpExtenderCallbacks callbacks) {
         BScanIssue issue = new BScanIssue();
         IHttpService service = scanIssue.getHttpService();
