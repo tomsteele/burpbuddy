@@ -1,5 +1,5 @@
 package burp;
 
-public class BScopeMessage {
+public class BURLMessage {
     public String url;
 }

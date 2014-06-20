@@ -13,6 +13,7 @@ public class ApiServer {
 
     public ApiServer(String ip, int port, IBurpExtenderCallbacks callbacks) {
 
+        IExtensionHelpers helpers = callbacks.getHelpers();
         setPort(port);
         setIpAddress(ip);
 
@@ -30,19 +31,19 @@ public class ApiServer {
                 }
             } catch (MalformedURLException e) {
                 response.status(400);
-                return "";
+                return e.getMessage();
             }
         });
 
         post("/scope", (request, response) -> {
             try {
-                BScopeMessage message = gson.fromJson(request.body(), BScopeMessage.class);
+                BURLMessage message = gson.fromJson(request.body(), BURLMessage.class);
                 callbacks.includeInScope(new URL(message.url));
                 response.status(201);
                 return gson.toJson(message);
             } catch (MalformedURLException e) {
                 response.status(400);
-                return "";
+                return e.getMessage();
             }
         });
 
@@ -54,12 +55,12 @@ public class ApiServer {
                 return "";
             } catch (MalformedURLException e) {
                 response.status(400);
-                return "";
+                return e.getMessage();
             }
         });
 
         get("/scanissues", (request, response) -> {
-            IScanIssue[] rawIssues =  callbacks.getScanIssues("");
+            IScanIssue[] rawIssues = callbacks.getScanIssues("");
             List<BScanIssue> issues = new ArrayList<>();
             for (IScanIssue issue : rawIssues) {
                 issues.add(BScanIssueFactory.create(issue, callbacks));
@@ -83,6 +84,19 @@ public class ApiServer {
             response.status(201);
             return gson.toJson(issue);
         });
+
+        post("/spider", (request, response) -> {
+            BURLMessage message = gson.fromJson(request.body(), BURLMessage.class);
+            try {
+                callbacks.sendToSpider(new URL(message.url));
+                response.status(200);
+                return "";
+            } catch (MalformedURLException e) {
+                response.status(400);
+                return e.getMessage();
+            }
+        });
+
     }
 
     public void stopServer() {
