@@ -79,7 +79,7 @@ A URL can be configured to hook into burp's request processing. On every request
 - highlight
 
 ## Response Hook
-Similarly, a URL can be configured to hook into burp's response processing. On every response, this URL will receive a POST containing a JSON body exactly like in the socket stream. A JSON response is expected with the exact same fields. Only the `raw` field can be modified to alter the content of the response. This is a bit of a pain, but the alternative is for the extension to implement magic and build a response for you. In most cases, users will want to transform the byte array into a string, perform some sort of match and replace, and then transform back into a byte array. Other fields below can be modified as well to alter burps presentation of the response:
+Similarly, a URL can be configured to hook into burp's response processing. On every response, this URL will receive a POST containing a JSON body exactly like in the socket stream. A JSON response is expected with the exact same fields. Only the `raw` field can be modified to alter the content of the response. This is a bit of a pain, but the alternative is for the extension to implement magic and build a response for you. In most cases, users will want to transform the byte array into a string, perform some sort of match and replace, and then transform back into a byte array. Other fields below can be modified as well to alter burp's presentation of the response:
 - raw
 - comment
 - highlight
