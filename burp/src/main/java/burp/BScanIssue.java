@@ -1,6 +1,5 @@
 package burp;
 
-// TODO: Build HTTP requests/response.
 public class BScanIssue extends BSocketMessage {
     public String url;
     public String host;
