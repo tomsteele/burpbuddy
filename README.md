@@ -33,6 +33,7 @@ All messages are sent as JSON.
 - inScope (bool) - true if the url is in the current burp scope
 - highlight (string)
 - comment (string)
+- toolFlag (int)
 - messageType (string) - set to `request`
 
 #### response
@@ -47,6 +48,7 @@ All messages are sent as JSON.
 - inScope (bool) - true if url is in the current burp scope
 - highlight (string)
 - comment (string)
+- toolFlag (int)
 - messageType (string) - set to `response`
 
 #### scanIssue
