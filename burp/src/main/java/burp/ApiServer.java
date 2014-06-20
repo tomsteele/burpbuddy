@@ -46,6 +46,18 @@ public class ApiServer {
             }
         });
 
+        delete("/scope/:url", (request, response) -> {
+            try {
+                URL url = new URL(new String(Base64.decodeBase64(request.params("url"))));
+                callbacks.excludeFromScope(url);
+                response.status(200);
+                return "";
+            } catch (MalformedURLException e) {
+                response.status(400);
+                return "";
+            }
+        });
+
         get("/scanissues", (request, response) -> {
             IScanIssue[] rawIssues =  callbacks.getScanIssues("");
             List<BScanIssue> issues = new ArrayList<>();
