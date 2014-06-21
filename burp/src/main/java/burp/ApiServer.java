@@ -21,6 +21,8 @@ public class ApiServer {
         setPort(port);
         setIpAddress(ip);
 
+        BScanQueue scanQueue = BScanQueueFactory.create();
+
         Gson gson = new Gson();
 
         before((request, response) -> {
@@ -150,16 +152,42 @@ public class ApiServer {
 
         post("/scan/active", (request, response) -> {
             BScanMessage message = gson.fromJson(request.body(), BScanMessage.class);
-            callbacks.doActiveScan(message.host, message.port, message.useHttps, message.request);
+            IScanQueueItem item = callbacks.doActiveScan(message.host, message.port, message.useHttps, message.request);
+            BScanQueueID id = scanQueue.addToQueue(item);
             response.status(201);
-            return gson.toJson(message);
+            return gson.toJson(id);
+        });
+
+        get("/scan/active/:id", (request, response) -> {
+            int id = Integer.parseInt(request.params("id"));
+            IScanQueueItem item = scanQueue.getItem(id);
+            if (item == null) {
+                response.status(404);
+                return "";
+            }
+            response.status(200);
+            BScanQueueItem bScanQueueItem = BScanQueueItemFactory.create(id, item, callbacks);
+            return gson.toJson(bScanQueueItem);
+        });
+
+        delete("/scan/active/:id", (request, response) -> {
+            int id = Integer.parseInt(request.params("id"));
+            IScanQueueItem item = scanQueue.getItem(id);
+            if (item == null) {
+                response.status(404);
+                return "";
+            }
+            response.status(200);
+            item.cancel();
+            scanQueue.removeFromQueue(id);
+            return "";
         });
 
         post("/scan/passive", (request, response) -> {
             BScanMessage message = gson.fromJson(request.body(), BScanMessage.class);
             callbacks.doPassiveScan(message.host, message.port, message.useHttps, message.request, message.response);
             response.status(201);
-            return gson.toJson(message);
+            return "ok";
         });
 
         post("/send/:tool", (request, response) -> {
@@ -223,7 +251,7 @@ public class ApiServer {
             return gson.toJson(bHttpRequestResponse);
         });
 
-        get("/proxyhistory", (request, resposne) -> {
+        get("/proxyhistory", (request, response) -> {
             List<BHttpRequestResponse> pairs = new ArrayList<>();
             for (IHttpRequestResponse requestResponse: callbacks.getProxyHistory()) {
                 pairs.add(BHttpRequestResponseFactory.create(requestResponse, callbacks, helpers));
