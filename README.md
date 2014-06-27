@@ -66,6 +66,12 @@ All messages are sent as JSON.
 - inScope (bool) - true if url is in the current burp scope
 - messageType (string) - set to `scanIssue`
 
+#### requestResponse
+This combines the request and response message into a single object. It's created by implementing a scanner check that always returns null.
+- request (request)
+- response (response)
+- messageType (string) - set to `requestResponse`
+
 ## Request hook
 A URL can be configured to hook into burp's request processing. On every request, this URL will receive a POST containing a JSON body exactly like in the socket stream. A JSON response is expected from this request with the exact same fields. Certain fields can be modified to alter the request before burp sends it along to the server. The following fields can be used to modify the request:
 
