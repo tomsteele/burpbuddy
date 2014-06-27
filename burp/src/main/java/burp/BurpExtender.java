@@ -304,6 +304,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             callbacks.registerExtensionStateListener(this);
             callbacks.registerHttpListener(this);
             callbacks.registerScannerListener(this);
+
+            // We have to register a "fake" passive scanner to emit request/response pairs to socket clients.
+            callbacks.registerScannerCheck(BFakeScannerForMessageFactory.create(callbacks, wss));
         }
     }
 

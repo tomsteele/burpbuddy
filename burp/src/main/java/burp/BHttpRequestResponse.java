@@ -1,6 +1,6 @@
 package burp;
 
-public class BHttpRequestResponse implements IHttpRequestResponse {
+public class BHttpRequestResponse extends BSocketMessage implements IHttpRequestResponse {
     public BHttpRequest request;
     public BHttpResponse response;
 

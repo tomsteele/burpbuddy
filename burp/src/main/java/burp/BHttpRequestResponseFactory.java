@@ -10,6 +10,7 @@ public class BHttpRequestResponseFactory {
                 helpers.analyzeRequest(requestResponse), callbacks);
         bHttpRequestResponse.response = BHttpResponseFactory.create(0x00004242, requestResponse,
                 helpers.analyzeResponse(requestResponse.getResponse()), callbacks);
+        bHttpRequestResponse.messageType = "requestResponse";
         return bHttpRequestResponse;
     }
 }
