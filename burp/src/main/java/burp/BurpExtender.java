@@ -23,7 +23,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         IHttpListener, IScannerListener, IProxyListener, ITab {
-    static final String NAME = "Burp Buddy";
+    static final String NAME = "burpbuddy";
 
     private EventServer wss;
     private ApiServer httpApi;
@@ -124,28 +124,44 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         if (messageIsRequest) {
             BHttpRequest req = BHttpRequestFactory.create(toolFlag, requestResponse, helpers.analyzeRequest(requestResponse),
                     callbacks);
-
             wss.sendToAll(gson.toJson(req));
+        } else {
+            BHttpResponse resp = BHttpResponseFactory.create(toolFlag, requestResponse,
+                    helpers.analyzeResponse(requestResponse.getResponse()), callbacks);
+            wss.sendToAll(gson.toJson(resp));
+        }
+    }
 
+    @Override
+    public void processProxyMessage(boolean messageIsRequest, IInterceptedProxyMessage message) {
+        IHttpRequestResponse iHttpRequestResponse = message.getMessageInfo();
+        int messageReference = message.getMessageReference();
+
+        if (messageIsRequest) {
+            BHttpRequest bHttpRequest = BHttpRequestFactory.create(IBurpExtenderCallbacks.TOOL_PROXY,
+                    iHttpRequestResponse,
+                    helpers.analyzeRequest(iHttpRequestResponse),
+                    callbacks);
+            bHttpRequest.referenceID = messageReference;
             try {
                 HttpResponse<JsonNode> modRequestResponse = Unirest.post(requestHookURL)
                         .header("accept", "application/json")
                         .header("content-type", "application/json")
-                        .body(gson.toJson(req))
+                        .body(gson.toJson(bHttpRequest))
                         .asJson();
                 if (modRequestResponse.getCode() == 200) {
                     BHttpRequest modifiedHttpRequest = gson.fromJson(new InputStreamReader(modRequestResponse.getRawBody()),
                             BHttpRequest.class);
 
-                    requestResponse.setRequest(helpers.buildHttpMessage(modifiedHttpRequest.headersToList(),
+                    iHttpRequestResponse.setRequest(helpers.buildHttpMessage(modifiedHttpRequest.headersToList(),
                             modifiedHttpRequest.body));
-                    requestResponse.setHttpService(helpers.buildHttpService(modifiedHttpRequest.host,
+                    iHttpRequestResponse.setHttpService(helpers.buildHttpService(modifiedHttpRequest.host,
                             modifiedHttpRequest.port, modifiedHttpRequest.protocol));
                     if (modifiedHttpRequest.comment != null && !modifiedHttpRequest.comment.equals("")) {
-                        requestResponse.setComment(modifiedHttpRequest.comment);
+                        iHttpRequestResponse.setComment(modifiedHttpRequest.comment);
                     }
                     if (modifiedHttpRequest.highlight != null && !modifiedHttpRequest.highlight.equals("")) {
-                       requestResponse.setHighlight(modifiedHttpRequest.highlight);
+                        iHttpRequestResponse.setHighlight(modifiedHttpRequest.highlight);
                     }
                 }
             } catch (UnirestException e) {
@@ -153,10 +169,10 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             }
 
         } else {
-            BHttpResponse resp = BHttpResponseFactory.create(toolFlag, requestResponse,
-                    helpers.analyzeResponse(requestResponse.getResponse()), callbacks);
-            wss.sendToAll(gson.toJson(resp));
 
+            BHttpResponse resp = BHttpResponseFactory.create(IBurpExtenderCallbacks.TOOL_PROXY, iHttpRequestResponse,
+                    helpers.analyzeResponse(iHttpRequestResponse.getResponse()), callbacks);
+            resp.referenceID = messageReference;
             try {
                 HttpResponse<JsonNode> modRequestResponse = Unirest.post(responseHookURL)
                         .header("accept", "application/json")
@@ -167,13 +183,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                     BHttpResponse modifiedHttpResponse = gson.fromJson(new InputStreamReader(modRequestResponse.getRawBody()),
                             BHttpResponse.class);
 
-                    requestResponse.setResponse(modifiedHttpResponse.raw);
+                    iHttpRequestResponse.setResponse(modifiedHttpResponse.raw);
 
                     if (modifiedHttpResponse.comment != null && !modifiedHttpResponse.comment.equals("")) {
-                        requestResponse.setComment(modifiedHttpResponse.comment);
+                        iHttpRequestResponse.setComment(modifiedHttpResponse.comment);
                     }
                     if (modifiedHttpResponse.highlight != null && !modifiedHttpResponse.highlight.equals("")) {
-                        requestResponse.setHighlight(modifiedHttpResponse.highlight);
+                        iHttpRequestResponse.setHighlight(modifiedHttpResponse.highlight);
                     }
                 }
 
@@ -181,10 +197,6 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                 // Do nothing.
             }
         }
-    }
-
-    @Override
-    public void processProxyMessage(boolean messageIsRequest, IInterceptedProxyMessage message) {
     }
 
     @Override
@@ -303,6 +315,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
             callbacks.registerExtensionStateListener(this);
             callbacks.registerHttpListener(this);
+            callbacks.registerProxyListener(this);
             callbacks.registerScannerListener(this);
 
             // We have to register a "fake" passive scanner to emit request/response pairs to socket clients.

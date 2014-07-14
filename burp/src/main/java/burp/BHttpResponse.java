@@ -17,4 +17,5 @@ public class BHttpResponse extends BSocketMessage {
     public String comment;
     public boolean inScope;
     public int toolFlag = 0x00004242;
+    public int referenceID;
 }

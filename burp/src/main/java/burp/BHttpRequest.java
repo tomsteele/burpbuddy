@@ -18,7 +18,7 @@ public class BHttpRequest extends BSocketMessage {
     public byte[] raw;
     public boolean inScope;
     public int toolFlag = 0x00004242;
-
+    public int referenceID;
 
     public List<String> headersToList() {
         List<String> burpHeaders = new ArrayList<String>();
