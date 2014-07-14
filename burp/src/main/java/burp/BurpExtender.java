@@ -66,56 +66,57 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
         // Create our UI.
         SwingUtilities.invokeLater(() -> {
-                panel = new JPanel();
-                scroll = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                scroll.setBorder(BorderFactory.createEmptyBorder());
+            panel = new JPanel();
+            scroll = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scroll.setBorder(BorderFactory.createEmptyBorder());
 
-                JLabel requestHookLabel = new JLabel("Request Service URL");
-                JLabel responseHookLabel = new JLabel("Response Service URL");
-                JLabel wssPortLabel = new JLabel("WebSocket Port");
-                JLabel httpPortLabel = new JLabel("HTTP API Port");
-                JLabel interfaceLabel = new JLabel("Interface");
 
-                httpPortField = new JTextField(Integer.toString(HTTPAPI_DEFAULT_PORT));
-                wssPortField = new JTextField(Integer.toString(WSS_DEFAULT_PORT));
-                interfaceField = new JTextField(DEFAULT_IP);
-                requestHookURLField = new JTextField(DEFAULT_REQUEST_HOOK_URL);
-                responseHookURLField = new JTextField(DEFAULT_RESPONSE_HOOK_URL);
+            JLabel requestHookLabel = new JLabel("Request Service URL");
+            JLabel responseHookLabel = new JLabel("Response Service URL");
+            JLabel wssPortLabel = new JLabel("WebSocket Port");
+            JLabel httpPortLabel = new JLabel("HTTP API Port");
+            JLabel interfaceLabel = new JLabel("Interface");
 
-                JButton saveButton = new JButton("Save Settings");
-                saveButton.addActionListener((e) -> {
-                    stdout.println("saving config");
-                    saveConfig();
-                });
+            httpPortField = new JTextField(Integer.toString(HTTPAPI_DEFAULT_PORT));
+            wssPortField = new JTextField(Integer.toString(WSS_DEFAULT_PORT));
+            interfaceField = new JTextField(DEFAULT_IP);
+            requestHookURLField = new JTextField(DEFAULT_REQUEST_HOOK_URL);
+            responseHookURLField = new JTextField(DEFAULT_RESPONSE_HOOK_URL);
 
-                // Layout all the things.
-                GroupLayout layout = new GroupLayout(panel);
-                panel.setLayout(layout);
-                layout.setAutoCreateGaps(true);
-                layout.setAutoCreateContainerGaps(true);
-                GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
+            JButton saveButton = new JButton("Save Settings");
+            saveButton.addActionListener((e) -> {
+                stdout.println("saving config");
+                saveConfig();
+            });
 
-                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(httpPortLabel).addComponent(wssPortLabel)
-                        .addComponent(requestHookLabel).addComponent(responseHookLabel).addComponent(saveButton));
-                hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(httpPortField)
-                        .addComponent(wssPortField).addComponent(requestHookURLField).addComponent(responseHookURLField));
-                layout.setHorizontalGroup(hGroup);
+            // Layout all the things.
+            GroupLayout layout = new GroupLayout(panel);
+            panel.setLayout(layout);
+            layout.setAutoCreateGaps(true);
+            layout.setAutoCreateContainerGaps(true);
+            GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
 
-                GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
-                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(interfaceLabel).addComponent(interfaceField));
-                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(httpPortLabel).addComponent(httpPortField));
-                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(wssPortLabel).addComponent(wssPortField));
-                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(requestHookLabel).addComponent(requestHookURLField));
-                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(responseHookLabel).addComponent(responseHookURLField));
-                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(saveButton));
+            hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(httpPortLabel).addComponent(wssPortLabel)
+                    .addComponent(requestHookLabel).addComponent(responseHookLabel).addComponent(saveButton));
+            hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(httpPortField)
+                    .addComponent(wssPortField).addComponent(requestHookURLField).addComponent(responseHookURLField));
+            layout.setHorizontalGroup(hGroup);
 
-                layout.setVerticalGroup(vGroup);
+            GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(interfaceLabel).addComponent(interfaceField));
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(httpPortLabel).addComponent(httpPortField));
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(wssPortLabel).addComponent(wssPortField));
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(requestHookLabel).addComponent(requestHookURLField));
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(responseHookLabel).addComponent(responseHookURLField));
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(saveButton));
 
-                restoreConfig();
-                callbacks.customizeUiComponent(scroll);
+            layout.setVerticalGroup(vGroup);
 
-                // Add the custom tab to Burp's UI.
-                callbacks.addSuiteTab(BurpExtender.this);
+            restoreConfig();
+            callbacks.customizeUiComponent(scroll);
+
+            // Add the custom tab to Burp's UI.
+            callbacks.addSuiteTab(BurpExtender.this);
         });
     }
 
