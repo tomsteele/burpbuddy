@@ -17,7 +17,7 @@ var hash = function(input){
 };
 
 var history = function(obj, cb){
-  var url = obj.url
+  var url = obj.url;
   var key = hash(url);
   db.get(key, function(err, isNew){
     if(!err && isNew === "true"){
