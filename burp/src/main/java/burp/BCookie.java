@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class BCookie {
     public String domain;
-    public Date experation;
+    public Date expiration;
     public String name;
     public String value;
 }

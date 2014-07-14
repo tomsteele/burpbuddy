@@ -27,7 +27,7 @@ public class ApiServer {
 
         before((request, response) -> {
             String contentType = request.headers("content-type");
-            if (contentType == null || !contentType.contains("application/json")) {
+            if (!request.requestMethod().equals("get") && (contentType == null || !contentType.contains("application/json"))) {
                 halt(400);
             }
         });
@@ -78,7 +78,7 @@ public class ApiServer {
             for (IScanIssue issue : rawIssues) {
                 issues.add(BScanIssueFactory.create(issue, callbacks));
             }
-            return gson.toJson(issues);
+            return gson.toJson(new BArrayWrapper(issues));
         });
 
         get("/scanissues/:url", (request, response) -> {
@@ -114,13 +114,13 @@ public class ApiServer {
             List<BCookie> cookies = new ArrayList<>();
             for (ICookie burpCookie: callbacks.getCookieJarContents()) {
                 BCookie cookie = new BCookie();
-                cookie.experation = burpCookie.getExpiration();
+                cookie.expiration = burpCookie.getExpiration();
                 cookie.domain = burpCookie.getDomain();
                 cookie.name = burpCookie.getName();
                 cookie.value = burpCookie.getValue();
                 cookies.add(cookie);
             }
-            return gson.toJson(cookies);
+            return gson.toJson(new BArrayWrapper(cookies));
         });
 
         post("/jar", (request, response) -> {
@@ -133,7 +133,7 @@ public class ApiServer {
 
                 @Override
                 public Date getExpiration() {
-                    return cookie.experation;
+                    return cookie.expiration;
                 }
 
                 @Override
@@ -232,7 +232,7 @@ public class ApiServer {
             for (IHttpRequestResponse requestResponse: callbacks.getSiteMap("")) {
                 pairs.add(BHttpRequestResponseFactory.create(requestResponse, callbacks, helpers));
             }
-            return gson.toJson(pairs);
+            return gson.toJson(new BArrayWrapper(pairs));
         });
 
         get("/sitemap/:url", (request, response) -> {
@@ -241,7 +241,7 @@ public class ApiServer {
             for (IHttpRequestResponse requestResponse: callbacks.getSiteMap(new String(encodedBytes))) {
                 pairs.add(BHttpRequestResponseFactory.create(requestResponse, callbacks, helpers));
             }
-            return gson.toJson(pairs);
+            return gson.toJson(new BArrayWrapper(pairs));
         });
 
         post("/sitemap", (request, response) -> {
@@ -256,7 +256,7 @@ public class ApiServer {
             for (IHttpRequestResponse requestResponse: callbacks.getProxyHistory()) {
                 pairs.add(BHttpRequestResponseFactory.create(requestResponse, callbacks, helpers));
             }
-            return gson.toJson(pairs);
+            return gson.toJson(new BArrayWrapper(pairs));
         });
 
     }

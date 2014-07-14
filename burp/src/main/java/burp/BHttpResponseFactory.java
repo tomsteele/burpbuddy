@@ -32,7 +32,7 @@ public class BHttpResponseFactory {
         for (ICookie cookie: burpCookies) {
             BCookie bcookie = new BCookie();
             bcookie.domain = cookie.getDomain();
-            bcookie.experation = cookie.getExpiration();
+            bcookie.expiration = cookie.getExpiration();
             bcookie.name = cookie.getName();
             bcookie.value = cookie.getValue();
             cookies.add(bcookie);
