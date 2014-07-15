@@ -4,7 +4,7 @@ burpbuddy
 burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API over the network through various mediums, with the goal of enabling development in any language without the restrictions of the JVM. See the documentation below and [examples](https://github.com/liftsecurity/burpbuddy/tree/master/examples) for more information.
 
 ## Releases
-
+A compiled and packaged Jar file is available [here](https://github.com/liftsecurity/burpbuddy/releases/download/v1.0.0/burpbuddy-1.0.0.jar).
 
 ## Build instructions for development or bleeding edge
 ### OSX
