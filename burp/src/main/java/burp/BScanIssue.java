@@ -16,6 +16,7 @@ public class BScanIssue extends BSocketMessage implements IScanIssue {
     public String remediationBackground;
     public String issueDetail;
     public String remediationDetail;
+    public BHttpRequestResponse[] requestResponses;
     public boolean inScope;
 
     /**
@@ -129,7 +130,7 @@ public class BScanIssue extends BSocketMessage implements IScanIssue {
      */
 
     public IHttpRequestResponse[] getHttpMessages() {
-        return new IHttpRequestResponse[0];
+        return requestResponses;
     }
 
     /**
