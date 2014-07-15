@@ -7,14 +7,8 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import com.google.gson.Gson;
 import java.awt.Component;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
+import javax.swing.*;
+
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.HttpResponse;
@@ -48,6 +42,10 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     private JTextField interfaceField;
     private JTextField requestHookURLField;
     private JTextField responseHookURLField;
+    private JToggleButton httpApiEnabledButton;
+    private JToggleButton wssEnabledButton;
+    private JToggleButton responseHookEnabledButton;
+    private JToggleButton requestHookEnabledButton;
     
     public int wssPort;
     public int httpPort;
@@ -83,6 +81,16 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             requestHookURLField = new JTextField(DEFAULT_REQUEST_HOOK_URL);
             responseHookURLField = new JTextField(DEFAULT_RESPONSE_HOOK_URL);
 
+            httpApiEnabledButton = new JToggleButton("HTTP Server is running", false);
+            wssEnabledButton = new JToggleButton("WebSocket Server is running", false);
+            requestHookEnabledButton = new JToggleButton("Request hook is enabled", false);
+            responseHookEnabledButton = new JToggleButton("Response hook is enabled", false);
+
+            httpApiEnabledButton.addActionListener((e) -> toggleHTTPApi());
+            wssEnabledButton.addActionListener((e) -> toggleWSSServer());
+            requestHookEnabledButton.addActionListener((e) -> toggleRequestHookEnabled());
+            responseHookEnabledButton.addActionListener((e) -> toggleResponseHookEnabled());
+
             JButton saveButton = new JButton("Save Settings");
             saveButton.addActionListener((e) -> {
                 stdout.println("saving config");
@@ -98,16 +106,32 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
             hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(httpPortLabel).addComponent(wssPortLabel)
                     .addComponent(requestHookLabel).addComponent(responseHookLabel).addComponent(saveButton));
+
             hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(httpPortField)
                     .addComponent(wssPortField).addComponent(requestHookURLField).addComponent(responseHookURLField));
+
+            hGroup.addGroup(layout.createParallelGroup().addComponent(httpApiEnabledButton)
+                    .addComponent(wssEnabledButton).addComponent(requestHookEnabledButton)
+                    .addComponent(responseHookEnabledButton));
+
             layout.setHorizontalGroup(hGroup);
 
             GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
-            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(interfaceLabel).addComponent(interfaceField));
-            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(httpPortLabel).addComponent(httpPortField));
-            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(wssPortLabel).addComponent(wssPortField));
-            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(requestHookLabel).addComponent(requestHookURLField));
-            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(responseHookLabel).addComponent(responseHookURLField));
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(interfaceLabel)
+                    .addComponent(interfaceField));
+
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(httpPortLabel)
+                    .addComponent(httpPortField).addComponent(httpApiEnabledButton));
+
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(wssPortLabel)
+                    .addComponent(wssPortField).addComponent(wssEnabledButton));
+
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(requestHookLabel)
+                    .addComponent(requestHookURLField).addComponent(requestHookEnabledButton));
+
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(responseHookLabel)
+                    .addComponent(responseHookURLField).addComponent(responseHookEnabledButton));
+
             vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(saveButton));
 
             layout.setVerticalGroup(vGroup);
@@ -139,6 +163,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         int messageReference = message.getMessageReference();
 
         if (messageIsRequest) {
+            if (requestHookEnabledButton.isSelected()) {
+                return;
+            }
             BHttpRequest bHttpRequest = BHttpRequestFactory.create(IBurpExtenderCallbacks.TOOL_PROXY,
                     iHttpRequestResponse,
                     helpers.analyzeRequest(iHttpRequestResponse),
@@ -170,7 +197,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             }
 
         } else {
-
+            if (responseHookEnabledButton.isSelected()) {
+                return;
+            }
             BHttpResponse resp = BHttpResponseFactory.create(IBurpExtenderCallbacks.TOOL_PROXY, iHttpRequestResponse,
                     helpers.analyzeResponse(iHttpRequestResponse.getResponse()), callbacks);
             resp.referenceID = messageReference;
@@ -340,7 +369,10 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         try {
             wss.stop();
             stdout.println("WebSocket server stopped");
+            wssEnabledButton.setSelected(true);
+            wssEnabledButton.setText(("WebSocket Server is not running"));
         } catch(IOException|InterruptedException e) {
+            wssEnabledButton.setSelected(false);
             stderr.println("Exception when stopping WebSocket server");
             stderr.println(e.getMessage());
         }
@@ -351,16 +383,54 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         wss = new EventServer(stdout, stderr, address);
         wss.start();
         stdout.println("WebSocket server started at ws://" + ip + ":" + wssPort);
+        wssEnabledButton.setSelected(false);
+        wssEnabledButton.setText("WebSocket Server is running");
     }
 
     public void stopHTTP() {
+        httpApiEnabledButton.setText("HTTP Server is not running");
+        httpApiEnabledButton.setSelected(true);
         stdout.println("HTTP API server stopped");
         httpApi.stopServer();
     }
 
     public void startHTTP() {
+        httpApiEnabledButton.setText("HTTP Server is running");
+        httpApiEnabledButton.setSelected(false);
         stdout.println("HTTP API server started at http://" + ip + ":" + httpPort);
         httpApi = new ApiServer(ip, httpPort, callbacks);
+    }
+
+    public void toggleHTTPApi() {
+        if (httpApiEnabledButton.isSelected()) {
+            stopHTTP();
+        } else {
+            startHTTP();
+        }
+    }
+
+    public void toggleWSSServer() {
+        if (wssEnabledButton.isSelected()) {
+            stopWSS();
+        } else {
+            startWSS();
+        }
+    }
+
+    public void toggleRequestHookEnabled() {
+        if (requestHookEnabledButton.isSelected()) {
+            requestHookEnabledButton.setText("Request hook disabled");
+        } else {
+            requestHookEnabledButton.setText("Request hook enabled");
+        }
+    }
+
+    public void toggleResponseHookEnabled() {
+        if (responseHookEnabledButton.isSelected()) {
+            responseHookEnabledButton.setText("Response hook disabled");
+        } else {
+            responseHookEnabledButton.setText("Response hook enabled");
+        }
     }
 
 }
