@@ -66,6 +66,7 @@ All messages are sent as JSON.
 - remediationBackground (string)
 - issueDetail (string)
 - remediationDetail (string)
+- requestResponses (array) - array of request/response pairs
 - inScope (bool) - true if url is in the current burp scope
 - messageType (string) - set to `scanIssue`
 
@@ -138,6 +139,7 @@ issueBackground: string
 remediationBackground: string
 issueDetail: string
 remediationDetail: string
+requestResposnes: array of request/response pairs. See POST /scan/passive for format.
 ```
 
 ### POST /spider
