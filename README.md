@@ -89,6 +89,7 @@ A URL can be configured to hook into burp's proxy processing. On every request, 
 - body
 - comment
 - highlight
+- referenceID
 
 The `referenceID` field may be used to track requests and response pairs.
 
@@ -97,6 +98,7 @@ Similarly, a URL can be configured to hook into burp's response processing. On e
 - raw
 - comment
 - highlight
+- referenceID
 
 The `referenceID` field may be used to track requests and response pairs.
 
