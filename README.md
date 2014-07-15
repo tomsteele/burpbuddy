@@ -3,10 +3,10 @@ burpbuddy
 
 burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API over the network through various mediums, with the goal of enabling development in any language without the restrictions of the JVM. See the documentation below and [examples](https://github.com/liftsecurity/burpbuddy/tree/master/examples) for more information.
 
-## Status
-Heavy development, nothing should be depended upon as stable, things will likely change.
+## Releases
 
-## Build instructions
+
+## Build instructions for development or bleeding edge
 ### OSX
 1. ```brew install maven```
 1. Install Java 8 
