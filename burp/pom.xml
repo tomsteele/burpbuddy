@@ -4,11 +4,11 @@
 
     <groupId>burp</groupId>
     <artifactId>burpbuddy</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>burp buddy</name>
-    <url>http://github.com/tomsteele/burpbuddy</url>
+    <url>http://github.com/liftsecurity/burpbuddy</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -35,10 +35,12 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     private final String DEFAULT_IP = "127.0.0.1";
     private final String DEFAULT_REQUEST_HOOK_URL = "http://localhost:3001/request";
     private final String DEFAULT_RESPONSE_HOOK_URL = "http://localhost:3001/response";
+    private final String WSS_DEFAULT_ALLOWED_ORIGIN = "*";
 
     // Settings
     private JTextField httpPortField;
     private JTextField wssPortField;
+    private JTextField wssAllowedOriginField;
     private JTextField interfaceField;
     private JTextField requestHookURLField;
     private JTextField responseHookURLField;
@@ -48,6 +50,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
     private JToggleButton requestHookEnabledButton;
     
     public int wssPort;
+    public String wssAllowedOrigin;
     public int httpPort;
     public String ip;
     public String requestHookURL;
@@ -72,11 +75,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             JLabel requestHookLabel = new JLabel("Request Service URL");
             JLabel responseHookLabel = new JLabel("Response Service URL");
             JLabel wssPortLabel = new JLabel("WebSocket Port");
+            JLabel wssAllowedOriginLabel = new JLabel("WebSocket Allowed Origin");
             JLabel httpPortLabel = new JLabel("HTTP API Port");
             JLabel interfaceLabel = new JLabel("Interface");
 
             httpPortField = new JTextField(Integer.toString(HTTPAPI_DEFAULT_PORT));
             wssPortField = new JTextField(Integer.toString(WSS_DEFAULT_PORT));
+            wssAllowedOriginField = new JTextField(WSS_DEFAULT_ALLOWED_ORIGIN);
             interfaceField = new JTextField(DEFAULT_IP);
             requestHookURLField = new JTextField(DEFAULT_REQUEST_HOOK_URL);
             responseHookURLField = new JTextField(DEFAULT_RESPONSE_HOOK_URL);
@@ -105,10 +110,10 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
 
             hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceLabel).addComponent(httpPortLabel).addComponent(wssPortLabel)
-                    .addComponent(requestHookLabel).addComponent(responseHookLabel).addComponent(saveButton));
+                    .addComponent(wssAllowedOriginLabel).addComponent(requestHookLabel).addComponent(responseHookLabel).addComponent(saveButton));
 
             hGroup.addGroup(layout.createParallelGroup().addComponent(interfaceField).addComponent(httpPortField)
-                    .addComponent(wssPortField).addComponent(requestHookURLField).addComponent(responseHookURLField));
+                    .addComponent(wssPortField).addComponent(wssAllowedOriginField).addComponent(requestHookURLField).addComponent(responseHookURLField));
 
             hGroup.addGroup(layout.createParallelGroup().addComponent(httpApiEnabledButton)
                     .addComponent(wssEnabledButton).addComponent(requestHookEnabledButton)
@@ -125,6 +130,9 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
             vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(wssPortLabel)
                     .addComponent(wssPortField).addComponent(wssEnabledButton));
+
+            vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(wssAllowedOriginLabel)
+                    .addComponent(wssAllowedOriginField));
 
             vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(requestHookLabel)
                     .addComponent(requestHookURLField).addComponent(requestHookEnabledButton));
@@ -263,6 +271,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
             stderr.println("Invalid WSS port, using default.");
             wssPort= WSS_DEFAULT_PORT;
         }
+
         wssPortField.setText(String.valueOf(wssPort));
 
         try {
@@ -278,12 +287,14 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         httpPortField.setText(String.valueOf(httpPort));
 
         ip = interfaceField.getText();
+        wssAllowedOrigin = wssAllowedOriginField.getText();
         requestHookURL = requestHookURLField.getText();
         responseHookURL = responseHookURLField.getText();
 
         this.callbacks.saveExtensionSetting("save", "1");
         this.callbacks.saveExtensionSetting("httpPort", Integer.toString(httpPort));
         this.callbacks.saveExtensionSetting("wssPort", Integer.toString(wssPort));
+        this.callbacks.saveExtensionSetting("wssAllowedOrigin", wssAllowedOrigin);
         this.callbacks.saveExtensionSetting("ip", ip); 
         this.callbacks.saveExtensionSetting("requestHookURL", requestHookURL);
         this.callbacks.saveExtensionSetting("responseHookURL", responseHookURL);
@@ -310,6 +321,13 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                wssPort= WSS_DEFAULT_PORT;
             }
             wssPortField.setText(String.valueOf(wssPort));
+
+            if (this.callbacks.loadExtensionSetting("wssAllowedOrigin") != null) {
+                wssAllowedOrigin = this.callbacks.loadExtensionSetting("wssAllowedOrigin");
+            } else {
+                wssAllowedOrigin = WSS_DEFAULT_ALLOWED_ORIGIN;
+            }
+            wssAllowedOriginField.setText(wssAllowedOrigin);
 
             if (this.callbacks.loadExtensionSetting("httpPort") != null) {
                 httpPort= Integer.parseInt(this.callbacks.loadExtensionSetting("httpPort"));
@@ -358,6 +376,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
         this.callbacks.saveExtensionSetting("save", "2");
         
         wssPort= WSS_DEFAULT_PORT;
+        wssAllowedOrigin = WSS_DEFAULT_ALLOWED_ORIGIN;
         httpPort = HTTPAPI_DEFAULT_PORT;
         ip = DEFAULT_IP;
         requestHookURL = DEFAULT_REQUEST_HOOK_URL;
@@ -380,7 +399,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
 
     public void startWSS() {
         InetSocketAddress address = new InetSocketAddress(ip, wssPort);
-        wss = new EventServer(stdout, stderr, address);
+        wss = new EventServer(wssAllowedOrigin, stdout, stderr, address);
         wss.start();
         stdout.println("WebSocket server started at ws://" + ip + ":" + wssPort);
         wssEnabledButton.setSelected(false);

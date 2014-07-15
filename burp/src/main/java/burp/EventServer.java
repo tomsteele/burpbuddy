@@ -12,17 +12,28 @@ public class EventServer extends WebSocketServer {
 
     private PrintWriter stdout;
     private PrintWriter stderr;
+    private String allowedOrigin;
 
-    public EventServer(PrintWriter stdout, PrintWriter stderr, InetSocketAddress inetSocketAddress) {
+    public EventServer(String allowedOrigin, PrintWriter stdout, PrintWriter stderr, InetSocketAddress inetSocketAddress) {
         super(inetSocketAddress);
         this.stdout = stdout;
         this.stderr = stderr;
+        this.allowedOrigin = allowedOrigin;
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
+
+        String origin = handshake.getFieldValue("Origin");
+        if (origin == null || (!origin.equals(allowedOrigin) && !allowedOrigin.equals("*"))) {
+            stdout.println("Denied origin: " + origin);
+            conn.close();
+            return;
+        }
+
         stdout.println(conn.getRemoteSocketAddress().getAddress().getHostAddress() +
-                       " connected to socket server");
+                " connected to socket server");
+        stdout.println("Origin: " + origin);
     }
 
     @Override

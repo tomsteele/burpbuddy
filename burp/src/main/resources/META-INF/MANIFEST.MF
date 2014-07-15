@@ -1,2 +1,2 @@
-Manifest-Version: 0.1
+Manifest-Version: 1.0
 Main-Class: burp.App
