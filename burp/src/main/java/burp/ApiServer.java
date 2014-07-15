@@ -27,7 +27,7 @@ public class ApiServer {
 
         before((request, response) -> {
             String contentType = request.headers("content-type");
-            if (!request.requestMethod().equals("get") && (contentType == null || !contentType.contains("application/json"))) {
+            if (!request.requestMethod().equals("GET") && (contentType == null || !contentType.contains("application/json"))) {
                 halt(400);
             }
         });
