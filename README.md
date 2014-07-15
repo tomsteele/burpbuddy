@@ -17,6 +17,11 @@ A compiled and packaged Jar file is available [here](https://github.com/liftsecu
 1. ```cd target```
 1. copy burpbuddy-0.1-SNAPSHOT.jar where/you/put/burp/stuff
 
+## Security
+The WebSocket Server and HTTP API are protected from CSRF. With the exception that the WebSocket Server allows an origin of `*` by default, which can be modified once you know the domain structure of your connection. We did this because it's very difficult to come up with all the possible combinations that can occur across different mediums. Currently, we do not provide any means of authentication. By default, the servers all listen on localhost.
+
+If you identify a vulnerability, please report it to us security@liftsecurity.io and we will work with you to resolve it. Thanks!
+
 ## WebSocket Server
 A WebSocket server is available to ingest streaming events from burp. Currently this includes requests, responses, and scan issues. Use the `messageType` field to distinguish between each of these. Sometimes it may appear that duplicate events are being emmited, this is because burp is emitting for different tools (proxy, spider, etc). Use the `toolFlag` parameter to differentiate between these. Also, `highlight` and `comment` fields will be tool dependent.
 
