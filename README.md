@@ -3,6 +3,10 @@ burpbuddy
 
 burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API over the network through various mediums, with the goal of enabling development in any language without the restrictions of the JVM. See the documentation below and [examples](https://github.com/liftsecurity/burpbuddy/tree/master/examples) for more information.
 
+## Requirements
+- Java 8
+- [BurpSuite](http://portswigger.net/burp/)
+
 ## Releases
 A compiled and packaged Jar file is available [here](https://github.com/liftsecurity/burpbuddy/releases/download/v1.0.0/burpbuddy-1.0.0.jar).
 
