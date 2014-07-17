@@ -6,9 +6,9 @@ import com.google.gson.Gson;
 
 public class BFakeScannerForMessage implements IScannerCheck {
 
-    public static EventServer wss;
-    public IBurpExtenderCallbacks callbacks;
-    public Gson gson;
+    private EventServer wss;
+    private IBurpExtenderCallbacks callbacks;
+    private Gson gson;
 
     public BFakeScannerForMessage(IBurpExtenderCallbacks callbacks, EventServer wss) {
         this.wss = wss;
