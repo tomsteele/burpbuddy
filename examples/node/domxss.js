@@ -20,7 +20,7 @@ ws.on('error', function(err) {
 function domXSS(request, response) {
     var contentType = response.headers['Content-Type'];
     if (typeof contentType === 'string' && (contentType.indexOf('javascript') !== -1 || contentType.indexOf('html') !== -1)) {
-        var body = new Buffer(response.body).toString().split('\n');
+        var body = new Buffer(response.body, 'base64').toString('ascii').split('\n');
         for (var i = 0; i < body.length; i++) {
             var line = body[i].trim();
             if (line.match(/(location\s*[\[.])|([.\[]\s*["']?\s*(arguments|dialogArguments|innerHTML|write(ln)?|open(Dialog)?|showModalDialog|cookie|URL|documentURI|baseURI|referrer|name|opener|parent|top|content|self|frames)\W)|(localStorage|sessionStorage|Database)/g)) {

@@ -17,7 +17,7 @@ ws.on('message', function(data, flags) {
         strictSSL: false,
     };
     if (['patch', 'post', 'put'].indexOf(obj.method.toLowerCase()) !== -1 && obj.body.length > 0)  {
-        req.body = new Buffer(obj.body);
+        req.body = new Buffer(obj.body, 'base64');
     }
     request(req, function(err, resp, body) {
         if (err) {
