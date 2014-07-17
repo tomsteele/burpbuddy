@@ -29,6 +29,10 @@ public class ApiServer {
             }
         });
 
+        after((request, response) -> {
+            response.type("application/json; charset=UTF8");
+        });
+
         get("/scope/:url", (request, response) -> {
             try {
                 URL url = new URL(new String(Base64.decodeBase64(request.params("url"))));
@@ -85,7 +89,7 @@ public class ApiServer {
             for (IScanIssue issue : rawIssues) {
                 issues.add(BScanIssueFactory.create(issue, callbacks));
             }
-            return gson.toJson(issues);
+            return gson.toJson(new BArrayWrapper(issues));
         });
 
         post("/scanissues", (request, response) -> {
