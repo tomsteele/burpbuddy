@@ -108,7 +108,7 @@ public class ApiServer {
             BURLMessage message = gson.fromJson(request.body(), BURLMessage.class);
             try {
                 callbacks.sendToSpider(new URL(message.url));
-                response.status(200);
+                response.status(201);
                 return "";
             } catch (MalformedURLException e) {
                 response.status(400);
