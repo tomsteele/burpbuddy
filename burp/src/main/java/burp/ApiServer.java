@@ -33,6 +33,11 @@ public class ApiServer {
             response.type("application/json; charset=UTF8");
         });
 
+        exception(Exception.class, (e, request, response) -> {
+            response.status(400);
+            response.body("{\"error\": \"" + e.getMessage() + "\"}");
+        });
+
         get("/scope/:url", (request, response) -> {
             try {
                 URL url = new URL(new String(Base64.decodeBase64(request.params("url"))));
