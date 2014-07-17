@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
 import java.net.URL;
+import org.apache.commons.codec.binary.Base64;
 
 public class BHttpRequestFactory {
 
@@ -37,8 +38,8 @@ public class BHttpRequestFactory {
         req.path = url.getPath();
         req.url = url.toString();
         req.headers = headerMap;
-        req.raw = rawRequest;
-        req.body = rawBody;
+        req.raw = Base64.encodeBase64String(rawRequest);
+        req.body = Base64.encodeBase64String(rawBody);
         req.highlight = request.getHighlight();
         req.comment = request.getComment();
         req.host = service.getHost();

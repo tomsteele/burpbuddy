@@ -14,14 +14,14 @@ public class BHttpRequest extends BSocketMessage {
     public String httpVersion = "HTTP/1.1";
     public String method;
     public HashMap<String, String> headers;
-    public byte[] body;
-    public byte[] raw;
+    public String body;
+    public String raw;
     public boolean inScope;
     public int toolFlag = 0x00004242;
     public int referenceID;
 
     public List<String> headersToList() {
-        List<String> burpHeaders = new ArrayList<String>();
+        List<String> burpHeaders = new ArrayList<>();
         burpHeaders.add(this.method + " " + this.path + " " + this.httpVersion);
         for (Map.Entry<String, String> pair: this.headers.entrySet()) {
             burpHeaders.add(pair.getKey() + ": " + pair.getValue());

@@ -13,6 +13,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.codec.binary.Base64;
 
 
 public class BurpExtender implements IBurpExtender, IExtensionStateListener,
@@ -190,7 +191,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                             BHttpRequest.class);
 
                     iHttpRequestResponse.setRequest(helpers.buildHttpMessage(modifiedHttpRequest.headersToList(),
-                            modifiedHttpRequest.body));
+                            Base64.decodeBase64(modifiedHttpRequest.body)));
                     iHttpRequestResponse.setHttpService(helpers.buildHttpService(modifiedHttpRequest.host,
                             modifiedHttpRequest.port, modifiedHttpRequest.protocol));
                     if (modifiedHttpRequest.comment != null && !modifiedHttpRequest.comment.equals("")) {
@@ -221,7 +222,7 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                     BHttpResponse modifiedHttpResponse = gson.fromJson(new InputStreamReader(modRequestResponse.getRawBody()),
                             BHttpResponse.class);
 
-                    iHttpRequestResponse.setResponse(modifiedHttpResponse.raw);
+                    iHttpRequestResponse.setResponse(Base64.decodeBase64(modifiedHttpResponse.raw));
 
                     if (modifiedHttpResponse.comment != null && !modifiedHttpResponse.comment.equals("")) {
                         iHttpRequestResponse.setComment(modifiedHttpResponse.comment);

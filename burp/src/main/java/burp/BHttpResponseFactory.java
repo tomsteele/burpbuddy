@@ -1,5 +1,7 @@
 package burp;
 
+import org.apache.commons.codec.binary.Base64;
+
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -40,8 +42,8 @@ public class BHttpResponseFactory {
 
         resp.toolFlag = toolFlag;
         resp.messageType = "response";
-        resp.raw = rawResponse;
-        resp.body = rawBody;
+        resp.raw = Base64.encodeBase64String(rawResponse);
+        resp.body = Base64.encodeBase64String(rawBody);
         resp.mimeType = responseInfo.getStatedMimeType();
         resp.statusCode = responseInfo.getStatusCode();
         resp.cookies = cookies;

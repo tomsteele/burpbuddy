@@ -1,23 +1,26 @@
 package burp;
 
+import org.apache.commons.codec.binary.Base64;
+
+
 public class BHttpRequestResponse extends BSocketMessage implements IHttpRequestResponse {
     public BHttpRequest request;
     public BHttpResponse response;
 
     public byte[] getRequest() {
-        return request.raw;
+        return Base64.decodeBase64(request.raw);
     }
 
     public void setRequest(byte[] message) {
-        request.raw = message;
+        request.raw = Base64.encodeBase64String(message);
     }
 
     public byte[] getResponse() {
-        return response.raw;
+        return Base64.decodeBase64(response.raw);
     }
 
     public void setResponse(byte[] message) {
-        response.raw = message;
+        response.raw = Base64.encodeBase64String(message);
     }
 
     public String getComment() {
