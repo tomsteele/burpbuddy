@@ -61,7 +61,7 @@ public class ApiServer {
             try {
                 URL url = new URL(new String(Base64.decodeBase64(request.params("url"))));
                 callbacks.excludeFromScope(url);
-                response.status(200);
+                response.status(204);
                 return "";
             } catch (MalformedURLException e) {
                 response.status(400);
@@ -175,7 +175,7 @@ public class ApiServer {
                 response.status(404);
                 return "";
             }
-            response.status(200);
+            response.status(204);
             item.cancel();
             scanQueue.removeFromQueue(id);
             return "";
