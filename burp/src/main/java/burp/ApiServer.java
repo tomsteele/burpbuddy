@@ -1,6 +1,5 @@
 package burp;
 
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,8 +15,6 @@ public class ApiServer {
     public ApiServer(String ip, int port, IBurpExtenderCallbacks callbacks) {
 
         IExtensionHelpers helpers = callbacks.getHelpers();
-        PrintWriter stdout = new PrintWriter(callbacks.getStdout());
-        PrintWriter stderr = new PrintWriter(callbacks.getStderr());
         setPort(port);
         setIpAddress(ip);
 
