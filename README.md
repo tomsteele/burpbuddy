@@ -218,22 +218,6 @@ Required Fields:
 message: string
 ```
 
-### POST /stdout
-Send a message to stdout.
-
-Required Fields:
-```
-message: string
-```
-
-### POST /stderr
-Send a message to stderr.
-
-Required Fields:
-```
-message: string
-```
-
 ### GET /sitemap
 Get the contents of burp's sitemap
 

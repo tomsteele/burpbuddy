@@ -219,18 +219,6 @@ public class ApiServer {
             return "";
         });
 
-        post("/stdout", (request, response) -> {
-            stdout.println(gson.fromJson(request.body(), BMessage.class).message);
-            response.status(201);
-            return "";
-        });
-
-        post("/stderr", (request, response) -> {
-            stderr.println(gson.fromJson(request.body(), BMessage.class).message);
-            response.status(201);
-            return "";
-        });
-
         get("/sitemap", (request, response) -> {
             List<BHttpRequestResponse> pairs = new ArrayList<>();
             for (IHttpRequestResponse requestResponse: callbacks.getSiteMap("")) {
