@@ -152,7 +152,8 @@ public class ApiServer {
 
         post("/scan/active", (request, response) -> {
             BScanMessage message = gson.fromJson(request.body(), BScanMessage.class);
-            IScanQueueItem item = callbacks.doActiveScan(message.host, message.port, message.useHttps, message.request);
+            IScanQueueItem item = callbacks.doActiveScan(message.host, message.port, message.useHttps,
+                   Base64.decodeBase64(message.request));
             BScanQueueID id = scanQueue.addToQueue(item);
             response.status(201);
             return gson.toJson(id);
@@ -185,7 +186,8 @@ public class ApiServer {
 
         post("/scan/passive", (request, response) -> {
             BScanMessage message = gson.fromJson(request.body(), BScanMessage.class);
-            callbacks.doPassiveScan(message.host, message.port, message.useHttps, message.request, message.response);
+            callbacks.doPassiveScan(message.host, message.port, message.useHttps, Base64.decodeBase64(message.request),
+                    Base64.decodeBase64(message.response));
             response.status(201);
             return "ok";
         });
@@ -195,11 +197,13 @@ public class ApiServer {
             BScanMessage message = gson.fromJson(request.body(), BScanMessage.class);
             switch (tool) {
                 case "intruder":
-                    callbacks.sendToIntruder(message.host, message.port, message.useHttps, message.request);
+                    callbacks.sendToIntruder(message.host, message.port, message.useHttps,
+                            Base64.decodeBase64(message.request));
                     response.status(201);
                     break;
                 case "repeater":
-                    callbacks.sendToRepeater(message.host, message.port, message.useHttps, message.request, "buddy");
+                    callbacks.sendToRepeater(message.host, message.port, message.useHttps,
+                            Base64.decodeBase64(message.request), "buddy");
                     response.status(201);
                     break;
                 default:
