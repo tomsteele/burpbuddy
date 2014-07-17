@@ -40,8 +40,8 @@ All messages are sent as JSON.
 - httpVersion (string)
 - method (string)
 - headers (object) - key/value pairs of strings
-- body (array) - byte array of the request body
-- raw (array) - byte array of the entire request
+- body (string) - base64 encoded string of the request body
+- raw (string) - base64 encoded string of the entire request
 - inScope (bool) - true if the url is in the current burp scope
 - highlight (string)
 - comment (string)
@@ -55,8 +55,8 @@ All messages are sent as JSON.
 - headers (object) - key/value pairs of strings
 - cookies (array) - array of cookie objects
 - mimeType (string)
-- body (array) - byte array of the response body
-- raw (array) - byte array of the entire response
+- body (string) - base64 encoded string of the response body
+- raw (string) - base64 encoded string of the entire response
 - inScope (bool) - true if url is in the current burp scope
 - highlight (string)
 - comment (string)
@@ -117,6 +117,15 @@ Virtually every method call in the burp extender API is exposed via HTTP. The fo
 ### GET /scope/{url}
 `url` should be a base64 encoded URL. The response will be `200` for a URL that is in burp's current scope and `404` for one that is not.
 
+Example:
+```
+$ curl -i http://localhost:8001/scope/aHR0cDovL3N0YWNrdGl0YW4uY29tLw==
+HTTP/1.1 200 OK
+
+$ curl -i http://localhost:8001/scope/aHR0cDovL3N0YWNrdGl0YW4uY2
+HTTP/1.1 404 Not Found
+```
+
 ### POST /scope
 The provided URL is added to burp's scope.
 
@@ -125,14 +134,50 @@ Required Fields:
 url: string
 ```
 
+Example:
+```
+$ curl -i http://localhost:8001/scope -X POST -H 'Content-type: application/json' -d '{"url": "http://liftsecurity.io"}'
+HTTP/1.1 201 Created
+
+{"url":"http://liftsecurity.io"}
+```
+
 ### DELETE /scope/{url}
 `url` should be a base64 encoded URL to remove from burp's scope.
+
+Example:
+```
+$ curl -i http://localhost:8001/scope/aHR0cDovL3Rlc3Rhc3AudnVsbndlYi5jb20v -X DELETE -H "content-type: application/json"
+HTTP/1.1 204 No Content
+
+```
 
 ### GET /scanissues
 Get a list of all scan issues.
 
+Example:
+```
+$ curl -i http://localhost:8001/scanissues
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF8
+
+
+{"data":[]}
+```
+
 ### GET /scanissues/{url}
 Given a base64 encoded URL, return the scan issues for that URL.
+
+Example:
+```
+$ curl -i http://localhost:8001/scanissues/aHR0cDovL3N0YWNrdGl0YW4uY29tLw==
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF8
+Content-Length: 11
+Server: Jetty(9.0.z-SNAPSHOT)
+
+{"data":[]}
+```
 
 ### POST /scanissues
 Add a new issue.
@@ -153,6 +198,20 @@ remediationDetail: string
 requestResposnes: array of request/response pairs. See POST /scan/passive for format.
 ```
 
+Example:
+```
+$ curl -i http://localhost:8001/scanissues -X POST -H 'Content-Type: application/json' -d '{"url": "http://liftsecurity.io", "host": "liftsecurity.io", "port": 4444, "protocol": "http", "name": "Hello World", "issueType": 134217728, "severity": "Information", "confidence": "Certain", "issueBackground": "beep", "remediationBackground": "boop", "issueDetail": "foo", "remediationDetail": "bar", "requestResponses":[{"request": { "host": "liftsecurity.io", "port": 4444, "protocol": "http", "raw": "R0VUIC8gSFRUUDEuMQ=="}, "response": {"host": "liftsecurity.io", "port": 4444, "protocol": "http", "raw": "SFRUUCAyMDAgT0s="}}]}'
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=UTF8
+Content-Length: 661
+Server: Jetty(9.0.z-SNAPSHOT)
+
+{"url":"http://liftsecurity.io","host":"liftsecurity.io","port":4444,"protocol":"http","name":"Hello World","issueType":134217728,"severity":"Information","confidence":"Certain","issueBackground":"beep","remediationBackground":"boop","issueDetail":"foo","remediationDetail":"bar","requestResponses":[{"request":{"host":"liftsecurity.io","port":4444,"protocol":"http","httpVersion":"HTTP/1.1","raw":"R0VUIC8gSFRUUDEuMQ\u003d\u003d","inScope":false,"toolFlag":16962,"referenceID":0},"response":{"statusCode":0,"raw":"SFRUUCAyMDAgT0s\u003d","host":"liftsecurity.io","protocol":"http","port":4444,"inScope":false,"toolFlag":16962,"referenceID":0}}],"inScope":false}
+```
+
+Resources:
+- [Issue Types](http://portswigger.net/burp/help/scanner_issuetypes.html)
+
 ### POST /spider
 Send a URL to spider.
 Required Fields:
@@ -160,8 +219,23 @@ Required Fields:
 url: string
 ```
 
+Example:
+```
+$ curl -i http://localhost:8001/spider -X POST -H 'Content-Type: application/json' -d '{"url": "http://liftsecurity.io/"}'
+HTTP/1.1 201 Created
+```
+
 ### GET /jar
 Get a list of all of the cookies in the cookie jar.
+
+Example:
+```
+$ curl -i http://localhost:8001/jar
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF8
+
+{"data":[{"domain":"liftsecurity.io","name":"SID","value":"192891pj2ijf90u129", "expiration":"Oct 15, 2014 9:09:44 AM"}]}
+```
 
 ### POST /jar
 Add a cookie to the cookie jar.
@@ -174,6 +248,15 @@ name: string
 value: string
 ```
 
+Example:
+```
+$ curl -i http://localhost:8001/jar -X POST -H 'Content-Type: application/json' -d '{"domain":"liftsecurity.io","name":"SID","value":"192891pj2ijf90u129", "expiration":"Oct 15, 2014 9:09:44 AM"}'
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=UTF8
+
+{"domain":"liftsecurity.io","expiration":"Oct 15, 2014 9:09:44 AM","name":"SID","value":"192891pj2ijf90u129"}
+```
+
 ### POST /scan/active
 Send a request to the active scanner.
 
@@ -182,19 +265,36 @@ Required Fields:
 host: string
 port: int
 useHttps: bool
-request: byte[]
+request: string(base64)
 ```
 
-Response:
+Example:
 ```
-id: int
+$ curl -i http://localhost:8001/scan/active -X POST -H 'Content-Type: application/json' -d '{"host": "stacktitan.com", "port": 80, "useHttps": false, "request": "R0VUIC8gSFRUUC8xLjENCkhvc3Q6IHN0YWNrdGl0YW4uY29tDQpBY2NlcHQ6ICovKg0KQWNjZXB0LUxhbmd1YWdlOiBlbg0KVXNlci1BZ2VudDogTW96aWxsYS81LjAgKGNvbXBhdGlibGU7IE1TSUUgOS4wOyBXaW5kb3dzIE5UIDYuMTsgV2luNjQ7IHg2NDsgVHJpZGVudC81LjApDQpDb25uZWN0aW9uOiBjbG9zZQ0KDQo="}'
+HTTP/1.1 201 Created
 ```
 
 ### GET /scan/active/{id}
 Get scan item `id` from the active queue.
 
+Example:
+```
+$ curl -i http://localhost:8001/scan/active/1
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF8
+
+{"id":1,"errors":0,"insertionPointCount":3,"requestCount":70,"status":"finished","percentComplete":100,"issues":[]}
+```
+
 ### DELETE /scan/active/{id}
 Delete a scan item `id` from the active queue.
+
+Example:
+```
+$ curl -i http://localhost:8001/scan/active/1 -X DELETE -H 'Content-Type: application/json'
+HTTP/1.1 204 No Content
+Content-Type: application/json; charset=UTF8
+```
 
 ### POST /scan/passive
 Send a request/response to the passive scanner for analysis.
@@ -204,8 +304,15 @@ Required Fields:
 host: string
 port: int
 useHttps: bool
-request: byte[]
-response: byte[]
+request: string (base64)
+response: string (base64)
+```
+
+Example:
+```
+curl -i http://localhost:8001/scan/passive -X POST -H 'Content-Type: application/json' -d '{"host": "liftsecurity.io", "port": 443, "useHttps": true, "request": "R0VUIC8gSFRUUDEuMQ==", "response": "SFRUUCAyMDAgT0s="}'
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=UTF8
 ```
 
 ### POST /send/{tool}
@@ -216,7 +323,14 @@ Required Fields:
 host: string
 port: int
 useHttps: bool
-request: byte[]
+request: string (base64)
+```
+
+Example:
+```
+$ curl -i http://localhost:8001/send/intruder -X POST -H 'Content-Type: application/json' -d '{"host": "liftsecurity.io", "port": 443, "useHttps": true, "request": "R0VUIC8gSFRUUDEuMQ=="}'
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=UTF8
 ```
 
 ### POST /alert
@@ -227,11 +341,38 @@ Required Fields:
 message: string
 ```
 
+Example:
+```
+$ curl -i http://localhost:8001/alert -X POST -H 'Content-Type: application/json' -d '{"message": "exterminate!"}'
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=UTF8
+```
+
 ### GET /sitemap
 Get the contents of burp's sitemap
 
+Example:
+```
+$ curl -i http://localhost:8001/sitemap
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF8
+
+{"data":[]}
+```
+
 ### GET /sitemap/{url}
 Get the contents of burp's sitemap containing the provied base64 encoded URL.
+
+Example:
+```
+$ curl -i http://localhost:8001/sitemap/aHR0cHM6Ly9saWZ0c2VjdXJpdHkuaW8v
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF8
+Transfer-Encoding: chunked
+Server: Jetty(9.0.z-SNAPSHOT)
+
+{"data":[]}
+```
 
 ### POST /sitemap
 Add a request/response to the sitemap.
@@ -239,7 +380,7 @@ Add a request/response to the sitemap.
 Required Fields:
 ```
 request: 
-    raw: byte[]
+    raw: string (base64)
     comment: string
     highlight: string
     host: string
@@ -247,7 +388,29 @@ request:
     protocol: string
 
 response:
-    raw: byte[]
+    raw: string (base64)
 ```
+
+Example:
+```
+$ curl -i http://localhost:8001/sitemap -X POST -H 'Content-Type: application/json' -d '{"request": {"host": "liftsecurity.io", "port": 443, "protocol": "https", "highlight": "red", "comment": "woohoo", "raw": "R0VUIC8gSFRUUDEuMQ=="}, "response": {"raw": "SFRUUC8xLjEgMjAwIE9LXHJcblxyXG4="}}'
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=UTF8
+
+{"request":{"host":"liftsecurity.io","port":443,"protocol":"https","highlight":"red","comment":"woohoo","httpVersion":"HTTP/1.1","raw":"R0VUIC8gSFRUUDEuMQ\u003d\u003d","inScope":false,"toolFlag":16962,"referenceID":0},"response":{"statusCode":0,"raw":"SFRUUC8xLjEgMjAwIE9LXHJcblxyXG4\u003d","port":0,"inScope":false,"toolFlag":16962,"referenceID":0}}
+```
+
+Known Issues:
+- Highlight is not getting set within burp, this appears to be an issue with the extender API
+
 ### GET /proxyhistory
 Get all the request/response pairs from burp's proxy history
+
+Example:
+```
+$ curl -i http://localhost:8001/proxyhistory
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF8
+
+{"data":[]}
+```
