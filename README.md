@@ -40,8 +40,8 @@ All messages are sent as JSON.
 - httpVersion (string)
 - method (string)
 - headers (object) - key/value pairs of strings
-- body (array) - byte array of the request body
-- raw (array) - byte array of the entire request
+- body (string) - base64 encoded string of the request body
+- raw (string) - base64 encoded string of the entire request
 - inScope (bool) - true if the url is in the current burp scope
 - highlight (string)
 - comment (string)
@@ -55,8 +55,8 @@ All messages are sent as JSON.
 - headers (object) - key/value pairs of strings
 - cookies (array) - array of cookie objects
 - mimeType (string)
-- body (array) - byte array of the response body
-- raw (array) - byte array of the entire response
+- body (string) - base64 encoded string of the response body
+- raw (string) - base64 encoded string of the entire response
 - inScope (bool) - true if url is in the current burp scope
 - highlight (string)
 - comment (string)
