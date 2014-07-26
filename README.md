@@ -187,6 +187,7 @@ Required Fields:
 url: string
 host: string
 port: int
+protocol: http
 name: string
 issueType: int
 severity: string
