@@ -415,3 +415,18 @@ Content-Type: application/json; charset=UTF8
 
 {"data":[]}
 ```
+
+### GET /state
+Download the current burp state
+
+Example:
+```
+$ curl -i http://localhost:8001/state
+HTTP/1.1 200 OK
+Content-Type: application/octet-stream;charset=UTF-8
+Content-Disposition: attachment; filename=burp_state
+Transfer-Encoding: chunked
+
+...data...
+```
+

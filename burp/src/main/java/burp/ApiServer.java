@@ -1,10 +1,16 @@
 package burp;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.net.URL;
+import java.util.UUID;
+import java.io.File;
+import javax.servlet.ServletOutputStream;
+
 import org.apache.commons.codec.binary.Base64;
 import com.google.gson.Gson;
 import static spark.Spark.*;
@@ -29,7 +35,7 @@ public class ApiServer {
             }
         });
 
-        after((request, response) -> {
+        before((request, response) -> {
             response.type("application/json; charset=UTF8");
         });
 
@@ -255,6 +261,36 @@ public class ApiServer {
                 pairs.add(BHttpRequestResponseFactory.create(requestResponse, callbacks, helpers));
             }
             return gson.toJson(new BArrayWrapper(pairs));
+        });
+
+        get("/state", (request, response) -> {
+            File file;
+            try {
+                file = File.createTempFile(UUID.randomUUID().toString(), "state");
+            } catch (IOException e) {
+                response.status(500);
+                return "{\"error\": \"" + e.getMessage() + "\"}";
+            }
+            callbacks.saveState(file);
+
+            response.type("application/octet-stream");
+            response.header("Content-Disposition", "attachment; filename=burp.state");
+            FileInputStream inputStream = null;
+            ServletOutputStream outStream = null;
+            try {
+                inputStream = new FileInputStream(file.getPath());
+                outStream = response.raw().getOutputStream();
+
+                int bytes;
+                while ((bytes = inputStream.read()) != -1) {
+                    outStream.write(bytes);
+                }
+
+            } catch (IOException e) {
+                response.status(500);
+                return "{\"error\": \"" + e.getMessage() + "\"}";
+            }
+            return "";
         });
 
     }
