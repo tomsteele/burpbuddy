@@ -1,15 +1,15 @@
 package burp;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.net.URL;
 import java.util.UUID;
-import java.io.File;
-import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletException;
+import javax.servlet.http.Part;
+import javax.servlet.MultipartConfigElement;
 
 import org.apache.commons.codec.binary.Base64;
 import com.google.gson.Gson;
@@ -17,6 +17,22 @@ import static spark.Spark.*;
 
 public class ApiServer {
 
+    public boolean isNotSameOrigin(String host, String origin) {
+        if (origin == null || origin.isEmpty()) {
+            return false;
+        }
+
+        try {
+            URL urlOrigin = new URL(origin);
+            if (host.equals(urlOrigin.getAuthority())) {
+                return false;
+            }
+        } catch (Exception e) {
+            return true;
+        }
+
+        return true;
+    }
 
     public ApiServer(String ip, int port, IBurpExtenderCallbacks callbacks) {
 
@@ -30,8 +46,11 @@ public class ApiServer {
 
         before((request, response) -> {
             String contentType = request.headers("content-type");
-            if (!request.requestMethod().equals("GET") && (contentType == null || !contentType.contains("application/json"))) {
-                halt(400);
+            if (!request.requestMethod().equals("GET") &&
+               (contentType == null ||
+               !contentType.contains("application/json")) &&
+               isNotSameOrigin(request.host(), request.headers("origin"))) {
+               halt(400);
             }
         });
 
@@ -275,21 +294,49 @@ public class ApiServer {
 
             response.type("application/octet-stream");
             response.header("Content-Disposition", "attachment; filename=burp.state");
-            FileInputStream inputStream = null;
-            ServletOutputStream outStream = null;
             try {
-                inputStream = new FileInputStream(file.getPath());
-                outStream = response.raw().getOutputStream();
-
-                int bytes;
-                while ((bytes = inputStream.read()) != -1) {
-                    outStream.write(bytes);
-                }
+                DataInputStream inputStream = new DataInputStream(new FileInputStream(file.getPath()));
+                DataOutputStream outStream = new DataOutputStream(response.raw().getOutputStream());
+                byte[] buf = new byte[inputStream.available()];
+                inputStream.readFully(buf);
+                outStream.write(buf);
+                inputStream.close();
+                outStream.close();
 
             } catch (IOException e) {
                 response.status(500);
                 return "{\"error\": \"" + e.getMessage() + "\"}";
+            } finally {
+                file.deleteOnExit();
             }
+            response.status(200);
+            return "";
+        });
+
+        post("/state", (request, response) -> {
+            MultipartConfigElement multipartConfigElement = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
+            request.raw().setAttribute("org.eclipse.multipartConfig", multipartConfigElement);
+            try {
+                Part file = request.raw().getPart("file");
+                File tmpFile = File.createTempFile(UUID.randomUUID().toString(), "state");
+
+                DataInputStream inputStream = new DataInputStream(file.getInputStream());
+                FileOutputStream outStream = new FileOutputStream(tmpFile.getPath());
+
+                byte[] buf = new byte[inputStream.available()];
+                inputStream.readFully(buf);
+                outStream.write(buf);
+                inputStream.close();
+                outStream.close();
+                callbacks.restoreState(tmpFile);
+                tmpFile.deleteOnExit();
+
+            } catch (ServletException|IOException e) {
+                response.status(500);
+                return "{\"error\": \"" + e.getMessage() + "\"}";
+            }
+
+            response.status(200);
             return "";
         });
 
