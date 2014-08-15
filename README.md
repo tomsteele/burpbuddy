@@ -8,7 +8,7 @@ burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API ove
 - [BurpSuite](http://portswigger.net/burp/)
 
 ## Releases
-A compiled and packaged Jar file is available [here](https://github.com/liftsecurity/burpbuddy/releases/download/v2.0.0/burpbuddy-2.0.0.jar).
+A compiled and packaged Jar file is available [here](https://github.com/liftsecurity/burpbuddy/releases/download/v2.1.0/burpbuddy-2.1.0.jar).
 
 ## Build instructions for development or bleeding edge
 ### OSX
@@ -37,6 +37,7 @@ All messages are sent as JSON.
 - protocol (string)
 - url (string)
 - path (string)
+- query (string)
 - httpVersion (string)
 - method (string)
 - headers (object) - key/value pairs of strings
@@ -94,6 +95,7 @@ A URL can be configured to hook into burp's proxy processing. On every request, 
 - httpVersion
 - method
 - path
+- query
 - headers
 - body
 - comment
@@ -430,3 +432,8 @@ Transfer-Encoding: chunked
 ...data...
 ```
 
+### POST /state
+Restore state from file. Burp reloads after restoration, so you will receive an empty reply from the server.
+```
+$ curl -i http://localhost:8001/state -X POST -F file=@restore_state
+```
