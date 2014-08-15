@@ -11,6 +11,7 @@ public class BHttpRequest extends BSocketMessage {
     public String comment;
     public String url;
     public String path;
+    public String query;
     public String httpVersion = "HTTP/1.1";
     public String method;
     public HashMap<String, String> headers;
@@ -22,7 +23,7 @@ public class BHttpRequest extends BSocketMessage {
 
     public List<String> headersToList() {
         List<String> burpHeaders = new ArrayList<>();
-        burpHeaders.add(this.method + " " + this.path + " " + this.httpVersion);
+        burpHeaders.add(this.method + " " + this.path  + this.query + " " + this.httpVersion);
         for (Map.Entry<String, String> pair: this.headers.entrySet()) {
             burpHeaders.add(pair.getKey() + ": " + pair.getValue());
         }

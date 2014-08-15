@@ -35,6 +35,7 @@ public class BHttpRequestFactory {
         req.toolFlag = toolFlag;
         req.messageType = "request";
         req.method = requestInfo.getMethod();
+        req.query = url.getQuery();
         req.path = url.getPath();
         req.url = url.toString();
         req.headers = headerMap;
