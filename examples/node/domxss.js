@@ -1,20 +1,20 @@
 var WebSocket = require('ws');
 var ws = new WebSocket('ws://localhost:8000/');
 
-ws.on('open', function() {
-  console.log('opened connection to ws://localhost:8000/');
+ws.on('open', function () {
+    console.log('opened connection to ws://localhost:8000/');
 });
 
-ws.on('message', function(data, flags) {
-  var obj = JSON.parse(data);
-  if (obj.messageType === 'requestResponse' && obj.request.inScope) {
-      domXSS(obj.request, obj.response);
-  }
+ws.on('message', function (data, flags) {
+    var obj = JSON.parse(data);
+    if (obj.messageType === 'requestResponse' && obj.request.inScope) {
+        domXSS(obj.request, obj.response);
+    }
 });
 
-ws.on('error', function(err) {
-  console.log(err);
-  process.exit(1);
+ws.on('error', function (err) {
+    console.log(err);
+    process.exit(1);
 });
 
 function domXSS(request, response) {
