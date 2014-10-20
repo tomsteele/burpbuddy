@@ -52,11 +52,13 @@ ws.on('message', function(data, flags) {
         req.body = new Buffer(obj.body, 'base64');
     }
     request(req, function(err, resp, body) {
-        fs.appendFileSync(argv._[0] + '.rpt', '\n' + resp.statusCode + " Hash: " + hash(resp.body) + " " + req.method + " " + obj.url);
-        fs.appendFileSync(argv._[0] + '.log', util.inspect({ "Code": resp.statusCode, "URL":req.url, "Hash": hash(body), "Request": req, "Response": resp}));
-        if (resp.statusCode < 300 && !err ) {
-        fs.appendFileSync(argv._[0] + '.issues', '-'+ "\nWARNING: " + hash(resp.body) + '\nWARNING: ' + resp.statusCode + " " + req.method + " " + obj.url);
-        console.log('-'+ "\nWARNING: " + hash(resp.body) + '\nWARNING: ' + resp.statusCode + " " + req.method + " " + obj.url);
+        if (!err) {
+            fs.appendFileSync(argv._[0] + '.rpt', '\n' + resp.statusCode + " Hash: " + hash(resp.body) + " " + req.method + " " + obj.url);
+            fs.appendFileSync(argv._[0] + '.log', util.inspect({ "Code": resp.statusCode, "URL":req.url, "Hash": hash(body), "Request": req, "Response": resp}));
+            if (resp.statusCode < 300 ) {
+                fs.appendFileSync(argv._[0] + '.issues', '-'+ "\nWARNING: " + hash(resp.body) + '\nWARNING: ' + resp.statusCode + " " + req.method + " " + obj.url);
+                console.log('-'+ "\nWARNING: " + hash(resp.body) + '\nWARNING: ' + resp.statusCode + " " + req.method + " " + obj.url);
+            }
         }
     });
     });
