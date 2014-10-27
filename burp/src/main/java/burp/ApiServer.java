@@ -258,6 +258,18 @@ public class ApiServer {
             }
             return gson.toJson(pairs);
         });
+        
+        post("/proxy/intercept/enable", (request, response) -> {
+            callbacks.setProxyInterceptionEnabled(true)
+            response.status(201);
+            return "";
+        });
+        post("/proxy/intercept/disable", (request, response) -> {
+            callbacks.setProxyInterceptionEnabled(false)
+            response.status(201);
+            return "";
+        });
+
 
     }
 
