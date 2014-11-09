@@ -339,12 +339,13 @@ public class ApiServer {
             response.status(200);
             return "";
         });
-        
+
         post("/proxy/intercept/enable", (request, response) -> {
             callbacks.setProxyInterceptionEnabled(true);
             response.status(201);
             return "";
         });
+
         post("/proxy/intercept/disable", (request, response) -> {
             callbacks.setProxyInterceptionEnabled(false);
             response.status(201);
