@@ -437,3 +437,15 @@ Restore state from file. Burp reloads after restoration, so you will receive an 
 ```
 $ curl -i http://localhost:8001/state -X POST -F file=@restore_state
 ```
+
+### POST /proxy/intercept/enable
+Enable proxy intercept.
+```
+$ curl -i http://localhost:8001/proxy/intercept/enable -X POST
+```
+
+### POST /proxy/intercept/disable
+Disable proxy intercept.
+```
+$ curl -i http://localhost:8001/proxy/intercept/disable -X POST
+```
