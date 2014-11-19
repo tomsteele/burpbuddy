@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <meta name="description" content="Burpbuddy : burpbuddy exposes Burp Suites&#39;s extender API over the network through various mediums, with the goal of enabling development in any language without the restrictions of the JVM">
+
+  <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+  <title>Burpbuddy</title>
+</head>
+
+<body>
+  <div id="xwrapper">
+    <div id="wrapper">
+      <header>
+        <h1>burpbuddy</h1>
+        <a id="forkme_banner" href="https://github.com/markthema3/burpbuddy">View on GitHub</a>
+
+        <section id="downloads">
+          <a class="zip_download_link" href="https://github.com/markthema3/burpbuddy/zipball/master">Download this project as a .zip file</a>
+          <a class="tar_download_link" href="https://github.com/markthema3/burpbuddy/tarball/master">Download this project as a tar.gz file</a>
+        </section>
+        <nav>
+          <ul>
+            <li><a href="index.html">project home</a></li>
+            <li><a href="start.html">getting started</a></li>
+            <li><a href="docs.html">documentation</a></li>
+          </ul>
+        </nav>
+      </header>
+      <section id="main">
+        <h2>
+          <a id="security" class="anchor" href="#security" aria-hidden="true"><span class="octicon octicon-link"></span></a>Security</h2>
+
+          <p>The WebSocket Server and HTTP API are protected from CSRF. With the exception that the WebSocket Server allows an origin of <code>*</code> by default, which can be modified once you know the domain structure of your connection. We did this because it's very difficult to come up with all the possible combinations that can occur across different mediums. Currently, we do not provide any means of authentication. By default, the servers all listen on localhost.</p>
+
+          <p>If you identify a vulnerability, please report it to us <a href="mailto:security@liftsecurity.io">security@liftsecurity.io</a> and we will work with you to resolve it. Thanks!</p>
+
+          <h2>
+            <a id="websocket-server" class="anchor" href="#websocket-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>WebSocket Server</h2>
+
+            <p>A WebSocket server is available to ingest streaming events from burp. Currently this includes requests, responses, and scan issues. Use the <code>messageType</code> field to distinguish between each of these. Sometimes it may appear that duplicate events are being emmited, this is because burp is emitting for different tools (proxy, spider, etc). Use the <code>toolFlag</code> parameter to differentiate between these. Also, <code>highlight</code> and <code>comment</code> fields will be tool dependent.</p>
+
+            <h3>
+              <a id="messages" class="anchor" href="#messages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Messages</h3>
+
+              <p>All messages are sent as JSON.</p>
+
+              <h4>
+                <a id="request" class="anchor" href="#request" aria-hidden="true"><span class="octicon octicon-link"></span></a>request</h4>
+
+                <ul>
+                  <li>host (string)</li>
+                  <li>port (int)</li>
+                  <li>protocol (string)</li>
+                  <li>url (string)</li>
+                  <li>path (string)</li>
+                  <li>query (string)</li>
+                  <li>httpVersion (string)</li>
+                  <li>method (string)</li>
+                  <li>headers (object) - key/value pairs of strings</li>
+                  <li>body (string) - base64 encoded string of the request body</li>
+                  <li>raw (string) - base64 encoded string of the entire request</li>
+                  <li>inScope (bool) - true if the url is in the current burp scope</li>
+                  <li>highlight (string)</li>
+                  <li>comment (string)</li>
+                  <li>toolFlag (int)</li>
+                  <li>messageType (string) - set to <code>request</code>
+                  </li>
+                </ul>
+
+                <h4>
+                  <a id="response" class="anchor" href="#response" aria-hidden="true"><span class="octicon octicon-link"></span></a>response</h4>
+
+                  <ul>
+                    <li>host (string)</li>
+                    <li>port (int)</li>
+                    <li>protocol (string)</li>
+                    <li>headers (object) - key/value pairs of strings</li>
+                    <li>cookies (array) - array of cookie objects</li>
+                    <li>mimeType (string)</li>
+                    <li>body (string) - base64 encoded string of the response body</li>
+                    <li>raw (string) - base64 encoded string of the entire response</li>
+                    <li>inScope (bool) - true if url is in the current burp scope</li>
+                    <li>highlight (string)</li>
+                    <li>comment (string)</li>
+                    <li>toolFlag (int)</li>
+                    <li>messageType (string) - set to <code>response</code>
+                    </li>
+                  </ul>
+
+                  <h4>
+                    <a id="scanissue" class="anchor" href="#scanissue" aria-hidden="true"><span class="octicon octicon-link"></span></a>scanIssue</h4>
+
+                    <ul>
+                      <li>host (string)</li>
+                      <li>port (int)</li>
+                      <li>protocol (string)</li>
+                      <li>name (string)</li>
+                      <li>issueType (int)</li>
+                      <li>severity (string)</li>
+                      <li>confidence (string)</li>
+                      <li>issueBackground (string)</li>
+                      <li>remediationBackground (string)</li>
+                      <li>issueDetail (string)</li>
+                      <li>remediationDetail (string)</li>
+                      <li>requestResponses (array) - array of request/response pairs</li>
+                      <li>inScope (bool) - true if url is in the current burp scope</li>
+                      <li>messageType (string) - set to <code>scanIssue</code>
+                      </li>
+                    </ul>
+
+                    <h4>
+                      <a id="requestresponse" class="anchor" href="#requestresponse" aria-hidden="true"><span class="octicon octicon-link"></span></a>requestResponse</h4>
+
+                      <p>This combines the request and response message into a single object. It's created by implementing a scanner check that always returns null.</p>
+
+                      <ul>
+                        <li>request (request)</li>
+                        <li>response (response)</li>
+                        <li>messageType (string) - set to <code>requestResponse</code>
+                        </li>
+                      </ul>
+
+                      <h2>
+                        <a id="request-hook" class="anchor" href="#request-hook" aria-hidden="true"><span class="octicon octicon-link"></span></a>Request hook</h2>
+
+                        <p>A URL can be configured to hook into burp's proxy processing. On every request, this URL will receive a POST containing a JSON body exactly like in the socket stream. A JSON response is expected from this request with the exact same fields. Certain fields can be modified to alter the request before burp sends it along the proxy chain, which will eventually go to the server. The following fields can be used to modify the request:</p>
+
+                        <ul>
+                          <li>host</li>
+                          <li>port</li>
+                          <li>protocol</li>
+                          <li>httpVersion</li>
+                          <li>method</li>
+                          <li>path</li>
+                          <li>query</li>
+                          <li>headers</li>
+                          <li>body</li>
+                          <li>comment</li>
+                          <li>highlight</li>
+                          <li>referenceID</li>
+                        </ul>
+
+                        <p>The <code>referenceID</code> field may be used to track requests and response pairs.</p>
+
+                        <h2>
+                          <a id="response-hook" class="anchor" href="#response-hook" aria-hidden="true"><span class="octicon octicon-link"></span></a>Response Hook</h2>
+
+                          <p>Similarly, a URL can be configured to hook into burp's response processing. On every response, this URL will receive a POST containing a JSON body exactly like in the socket stream. A JSON response is expected with the exact same fields. Only the <code>raw</code> field can be modified to alter the content of the response. This is a bit of a pain, but the alternative is for the extension to implement magic and build a response for you. In most cases, users will want to transform the byte array into a string, perform some sort of match and replace, and then transform back into a byte array. Other fields below can be modified as well to alter burp's presentation of the response:</p>
+
+                          <ul>
+                            <li>raw</li>
+                            <li>comment</li>
+                            <li>highlight</li>
+                            <li>referenceID</li>
+                          </ul>
+
+                          <p>The <code>referenceID</code> field may be used to track requests and response pairs.</p>
+
+                          <h2>
+                            <a id="http-api" class="anchor" href="#http-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>HTTP API</h2>
+
+                            <p>Virtually every method call in the burp extender API is exposed via HTTP. The following is a list of paths and required formats. All non <code>GET</code> requests must have a content-type of <code>application/json</code>.</p>
+
+                            <h3>
+                              <a id="get-scopeurl" class="anchor" href="#get-scopeurl" aria-hidden="true"><span class="octicon octicon-link"></span></a>GET /scope/{url}</h3>
+
+                              <p><code>url</code> should be a base64 encoded URL. The response will be <code>200</code> for a URL that is in burp's current scope and <code>404</code> for one that is not.</p>
+
+                              <p>Example:</p>
+
+                              <pre><code>$ curl -i http://localhost:8001/scope/aHR0cDovL3N0YWNrdGl0YW4uY29tLw==
+                                HTTP/1.1 200 OK
+
+                                $ curl -i http://localhost:8001/scope/aHR0cDovL3N0YWNrdGl0YW4uY2
+                                HTTP/1.1 404 Not Found
+                              </code></pre>
+
+                              <h3>
+                                <a id="post-scope" class="anchor" href="#post-scope" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /scope</h3>
+
+                                <p>The provided URL is added to burp's scope.</p>
+
+                                <p>Required Fields:</p>
+
+                                <pre><code>url: string
+                                </code></pre>
+
+                                <p>Example:</p>
+
+                                <pre><code>$ curl -i http://localhost:8001/scope -X POST -H 'Content-type: application/json' -d '{"url": "http://liftsecurity.io"}'
+                                  HTTP/1.1 201 Created
+
+                                  {"url":"http://liftsecurity.io"}
+                                </code></pre>
+
+                                <h3>
+                                  <a id="delete-scopeurl" class="anchor" href="#delete-scopeurl" aria-hidden="true"><span class="octicon octicon-link"></span></a>DELETE /scope/{url}</h3>
+
+                                  <p><code>url</code> should be a base64 encoded URL to remove from burp's scope.</p>
+
+                                  <p>Example:</p>
+
+                                  <pre><code>$ curl -i http://localhost:8001/scope/aHR0cDovL3Rlc3Rhc3AudnVsbndlYi5jb20v -X DELETE -H "content-type: application/json"
+                                    HTTP/1.1 204 No Content
+
+                                  </code></pre>
+
+                                  <h3>
+                                    <a id="get-scanissues" class="anchor" href="#get-scanissues" aria-hidden="true"><span class="octicon octicon-link"></span></a>GET /scanissues</h3>
+
+                                    <p>Get a list of all scan issues.</p>
+
+                                    <p>Example:</p>
+
+                                    <pre><code>$ curl -i http://localhost:8001/scanissues
+                                      HTTP/1.1 200 OK
+                                      Content-Type: application/json; charset=UTF8
+
+
+                                      {"data":[]}
+                                    </code></pre>
+
+                                    <h3>
+                                      <a id="get-scanissuesurl" class="anchor" href="#get-scanissuesurl" aria-hidden="true"><span class="octicon octicon-link"></span></a>GET /scanissues/{url}</h3>
+
+                                      <p>Given a base64 encoded URL, return the scan issues for that URL.</p>
+
+                                      <p>Example:</p>
+
+                                      <pre><code>$ curl -i http://localhost:8001/scanissues/aHR0cDovL3N0YWNrdGl0YW4uY29tLw==
+                                        HTTP/1.1 200 OK
+                                        Content-Type: application/json; charset=UTF8
+                                        Content-Length: 11
+                                        Server: Jetty(9.0.z-SNAPSHOT)
+
+                                        {"data":[]}
+                                      </code></pre>
+
+                                      <h3>
+                                        <a id="post-scanissues" class="anchor" href="#post-scanissues" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /scanissues</h3>
+
+                                        <p>Add a new issue.</p>
+
+                                        <p>Required Fields:</p>
+
+                                        <pre><code>url: string
+                                          host: string
+                                          port: int
+                                          protocol: http
+                                          name: string
+                                          issueType: int
+                                          severity: string
+                                          confidence: string
+                                          issueBackground: string
+                                          remediationBackground: string
+                                          issueDetail: string
+                                          remediationDetail: string
+                                          requestResposnes: array of request/response pairs. See POST /scan/passive for format.
+                                        </code></pre>
+
+                                        <p>Example:</p>
+
+                                        <pre><code>$ curl -i http://localhost:8001/scanissues -X POST -H 'Content-Type: application/json' -d '{"url": "http://liftsecurity.io", "host": "liftsecurity.io", "port": 4444, "protocol": "http", "name": "Hello World", "issueType": 134217728, "severity": "Information", "confidence": "Certain", "issueBackground": "beep", "remediationBackground": "boop", "issueDetail": "foo", "remediationDetail": "bar", "requestResponses":[{"request": { "host": "liftsecurity.io", "port": 4444, "protocol": "http", "raw": "R0VUIC8gSFRUUDEuMQ=="}, "response": {"host": "liftsecurity.io", "port": 4444, "protocol": "http", "raw": "SFRUUCAyMDAgT0s="}}]}'
+                                          HTTP/1.1 201 Created
+                                          Content-Type: application/json; charset=UTF8
+                                          Content-Length: 661
+                                          Server: Jetty(9.0.z-SNAPSHOT)
+
+                                          {"url":"http://liftsecurity.io","host":"liftsecurity.io","port":4444,"protocol":"http","name":"Hello World","issueType":134217728,"severity":"Information","confidence":"Certain","issueBackground":"beep","remediationBackground":"boop","issueDetail":"foo","remediationDetail":"bar","requestResponses":[{"request":{"host":"liftsecurity.io","port":4444,"protocol":"http","httpVersion":"HTTP/1.1","raw":"R0VUIC8gSFRUUDEuMQ\u003d\u003d","inScope":false,"toolFlag":16962,"referenceID":0},"response":{"statusCode":0,"raw":"SFRUUCAyMDAgT0s\u003d","host":"liftsecurity.io","protocol":"http","port":4444,"inScope":false,"toolFlag":16962,"referenceID":0}}],"inScope":false}
+                                        </code></pre>
+
+                                        <p>Resources:</p>
+
+                                        <ul>
+                                          <li><a href="http://portswigger.net/burp/help/scanner_issuetypes.html">Issue Types</a></li>
+                                        </ul>
+
+                                        <h3>
+                                          <a id="post-spider" class="anchor" href="#post-spider" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /spider</h3>
+
+                                          <p>Send a URL to spider.
+                                            Required Fields:</p>
+
+                                            <pre><code>url: string
+                                            </code></pre>
+
+                                            <p>Example:</p>
+
+                                            <pre><code>$ curl -i http://localhost:8001/spider -X POST -H 'Content-Type: application/json' -d '{"url": "http://liftsecurity.io/"}'
+                                              HTTP/1.1 201 Created
+                                            </code></pre>
+
+                                            <h3>
+                                              <a id="get-jar" class="anchor" href="#get-jar" aria-hidden="true"><span class="octicon octicon-link"></span></a>GET /jar</h3>
+
+                                              <p>Get a list of all of the cookies in the cookie jar.</p>
+
+                                              <p>Example:</p>
+
+                                              <pre><code>$ curl -i http://localhost:8001/jar
+                                                HTTP/1.1 200 OK
+                                                Content-Type: application/json; charset=UTF8
+
+                                                {"data":[{"domain":"liftsecurity.io","name":"SID","value":"192891pj2ijf90u129", "expiration":"Oct 15, 2014 9:09:44 AM"}]}
+                                              </code></pre>
+
+                                              <h3>
+                                                <a id="post-jar" class="anchor" href="#post-jar" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /jar</h3>
+
+                                                <p>Add a cookie to the cookie jar.</p>
+
+                                                <p>Required Fields:</p>
+
+                                                <pre><code>domain: string
+                                                  expiration: string // In Date format
+                                                  name: string
+                                                  value: string
+                                                </code></pre>
+
+                                                <p>Example:</p>
+
+                                                <pre><code>$ curl -i http://localhost:8001/jar -X POST -H 'Content-Type: application/json' -d '{"domain":"liftsecurity.io","name":"SID","value":"192891pj2ijf90u129", "expiration":"Oct 15, 2014 9:09:44 AM"}'
+                                                  HTTP/1.1 201 Created
+                                                  Content-Type: application/json; charset=UTF8
+
+                                                  {"domain":"liftsecurity.io","expiration":"Oct 15, 2014 9:09:44 AM","name":"SID","value":"192891pj2ijf90u129"}
+                                                </code></pre>
+
+                                                <h3>
+                                                  <a id="post-scanactive" class="anchor" href="#post-scanactive" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /scan/active</h3>
+
+                                                  <p>Send a request to the active scanner.</p>
+
+                                                  <p>Required Fields:</p>
+
+                                                  <pre><code>host: string
+                                                    port: int
+                                                    useHttps: bool
+                                                    request: string(base64)
+                                                  </code></pre>
+
+                                                  <p>Example:</p>
+
+                                                  <pre><code>$ curl -i http://localhost:8001/scan/active -X POST -H 'Content-Type: application/json' -d '{"host": "stacktitan.com", "port": 80, "useHttps": false, "request": "R0VUIC8gSFRUUC8xLjENCkhvc3Q6IHN0YWNrdGl0YW4uY29tDQpBY2NlcHQ6ICovKg0KQWNjZXB0LUxhbmd1YWdlOiBlbg0KVXNlci1BZ2VudDogTW96aWxsYS81LjAgKGNvbXBhdGlibGU7IE1TSUUgOS4wOyBXaW5kb3dzIE5UIDYuMTsgV2luNjQ7IHg2NDsgVHJpZGVudC81LjApDQpDb25uZWN0aW9uOiBjbG9zZQ0KDQo="}'
+                                                    HTTP/1.1 201 Created
+                                                  </code></pre>
+
+                                                  <h3>
+                                                    <a id="get-scanactiveid" class="anchor" href="#get-scanactiveid" aria-hidden="true"><span class="octicon octicon-link"></span></a>GET /scan/active/{id}</h3>
+
+                                                    <p>Get scan item <code>id</code> from the active queue.</p>
+
+                                                    <p>Example:</p>
+
+                                                    <pre><code>$ curl -i http://localhost:8001/scan/active/1
+                                                      HTTP/1.1 200 OK
+                                                      Content-Type: application/json; charset=UTF8
+
+                                                      {"id":1,"errors":0,"insertionPointCount":3,"requestCount":70,"status":"finished","percentComplete":100,"issues":[]}
+                                                    </code></pre>
+
+                                                    <h3>
+                                                      <a id="delete-scanactiveid" class="anchor" href="#delete-scanactiveid" aria-hidden="true"><span class="octicon octicon-link"></span></a>DELETE /scan/active/{id}</h3>
+
+                                                      <p>Delete a scan item <code>id</code> from the active queue.</p>
+
+                                                      <p>Example:</p>
+
+                                                      <pre><code>$ curl -i http://localhost:8001/scan/active/1 -X DELETE -H 'Content-Type: application/json'
+                                                        HTTP/1.1 204 No Content
+                                                        Content-Type: application/json; charset=UTF8
+                                                      </code></pre>
+
+                                                      <h3>
+                                                        <a id="post-scanpassive" class="anchor" href="#post-scanpassive" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /scan/passive</h3>
+
+                                                        <p>Send a request/response to the passive scanner for analysis.</p>
+
+                                                        <p>Required Fields:</p>
+
+                                                        <pre><code>host: string
+                                                          port: int
+                                                          useHttps: bool
+                                                          request: string (base64)
+                                                          response: string (base64)
+                                                        </code></pre>
+
+                                                        <p>Example:</p>
+
+                                                        <pre><code>curl -i http://localhost:8001/scan/passive -X POST -H 'Content-Type: application/json' -d '{"host": "liftsecurity.io", "port": 443, "useHttps": true, "request": "R0VUIC8gSFRUUDEuMQ==", "response": "SFRUUCAyMDAgT0s="}'
+                                                          HTTP/1.1 201 Created
+                                                          Content-Type: application/json; charset=UTF8
+                                                        </code></pre>
+
+                                                        <h3>
+                                                          <a id="post-sendtool" class="anchor" href="#post-sendtool" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /send/{tool}</h3>
+
+                                                          <p>Send a request to repeater or intruder, provided as <code>tool</code>.</p>
+
+                                                          <p>Required Fields:</p>
+
+                                                          <pre><code>host: string
+                                                            port: int
+                                                            useHttps: bool
+                                                            request: string (base64)
+                                                          </code></pre>
+
+                                                          <p>Example:</p>
+
+                                                          <pre><code>$ curl -i http://localhost:8001/send/intruder -X POST -H 'Content-Type: application/json' -d '{"host": "liftsecurity.io", "port": 443, "useHttps": true, "request": "R0VUIC8gSFRUUDEuMQ=="}'
+                                                            HTTP/1.1 201 Created
+                                                            Content-Type: application/json; charset=UTF8
+                                                          </code></pre>
+
+                                                          <h3>
+                                                            <a id="post-alert" class="anchor" href="#post-alert" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /alert</h3>
+
+                                                            <p>Create an alert.</p>
+
+                                                            <p>Required Fields:</p>
+
+                                                            <pre><code>message: string
+                                                            </code></pre>
+
+                                                            <p>Example:</p>
+
+                                                            <pre><code>$ curl -i http://localhost:8001/alert -X POST -H 'Content-Type: application/json' -d '{"message": "exterminate!"}'
+                                                              HTTP/1.1 201 Created
+                                                              Content-Type: application/json; charset=UTF8
+                                                            </code></pre>
+
+                                                            <h3>
+                                                              <a id="get-sitemap" class="anchor" href="#get-sitemap" aria-hidden="true"><span class="octicon octicon-link"></span></a>GET /sitemap</h3>
+
+                                                              <p>Get the contents of burp's sitemap</p>
+
+                                                              <p>Example:</p>
+
+                                                              <pre><code>$ curl -i http://localhost:8001/sitemap
+                                                                HTTP/1.1 200 OK
+                                                                Content-Type: application/json; charset=UTF8
+
+                                                                {"data":[]}
+                                                              </code></pre>
+
+                                                              <h3>
+                                                                <a id="get-sitemapurl" class="anchor" href="#get-sitemapurl" aria-hidden="true"><span class="octicon octicon-link"></span></a>GET /sitemap/{url}</h3>
+
+                                                                <p>Get the contents of burp's sitemap containing the provied base64 encoded URL.</p>
+
+                                                                <p>Example:</p>
+
+                                                                <pre><code>$ curl -i http://localhost:8001/sitemap/aHR0cHM6Ly9saWZ0c2VjdXJpdHkuaW8v
+                                                                  HTTP/1.1 200 OK
+                                                                  Content-Type: application/json; charset=UTF8
+                                                                  Transfer-Encoding: chunked
+                                                                  Server: Jetty(9.0.z-SNAPSHOT)
+
+                                                                  {"data":[]}
+                                                                </code></pre>
+
+                                                                <h3>
+                                                                  <a id="post-sitemap" class="anchor" href="#post-sitemap" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /sitemap</h3>
+
+                                                                  <p>Add a request/response to the sitemap.</p>
+
+                                                                  <p>Required Fields:</p>
+
+                                                                  <pre><code>request:
+                                                                    raw: string (base64)
+                                                                    comment: string
+                                                                    highlight: string
+                                                                    host: string
+                                                                    port: int
+                                                                    protocol: string
+
+                                                                    response:
+                                                                    raw: string (base64)
+                                                                  </code></pre>
+
+                                                                  <p>Example:</p>
+
+                                                                  <pre><code>$ curl -i http://localhost:8001/sitemap -X POST -H 'Content-Type: application/json' -d '{"request": {"host": "liftsecurity.io", "port": 443, "protocol": "https", "highlight": "red", "comment": "woohoo", "raw": "R0VUIC8gSFRUUDEuMQ=="}, "response": {"raw": "SFRUUC8xLjEgMjAwIE9LXHJcblxyXG4="}}'
+                                                                    HTTP/1.1 201 Created
+                                                                    Content-Type: application/json; charset=UTF8
+
+                                                                    {"request":{"host":"liftsecurity.io","port":443,"protocol":"https","highlight":"red","comment":"woohoo","httpVersion":"HTTP/1.1","raw":"R0VUIC8gSFRUUDEuMQ\u003d\u003d","inScope":false,"toolFlag":16962,"referenceID":0},"response":{"statusCode":0,"raw":"SFRUUC8xLjEgMjAwIE9LXHJcblxyXG4\u003d","port":0,"inScope":false,"toolFlag":16962,"referenceID":0}}
+                                                                  </code></pre>
+
+                                                                  <p>Known Issues:</p>
+
+                                                                  <ul>
+                                                                    <li>Highlight is not getting set within burp, this appears to be an issue with the extender API</li>
+                                                                  </ul>
+
+                                                                  <h3>
+                                                                    <a id="get-proxyhistory" class="anchor" href="#get-proxyhistory" aria-hidden="true"><span class="octicon octicon-link"></span></a>GET /proxyhistory</h3>
+
+                                                                    <p>Get all the request/response pairs from burp's proxy history</p>
+
+                                                                    <p>Example:</p>
+
+                                                                    <pre><code>$ curl -i http://localhost:8001/proxyhistory
+                                                                      HTTP/1.1 200 OK
+                                                                      Content-Type: application/json; charset=UTF8
+
+                                                                      {"data":[]}
+                                                                    </code></pre>
+
+                                                                    <h3>
+                                                                      <a id="get-state" class="anchor" href="#get-state" aria-hidden="true"><span class="octicon octicon-link"></span></a>GET /state</h3>
+
+                                                                      <p>Download the current burp state</p>
+
+                                                                      <p>Example:</p>
+
+                                                                      <pre><code>$ curl -i http://localhost:8001/state
+                                                                        HTTP/1.1 200 OK
+                                                                        Content-Type: application/octet-stream;charset=UTF-8
+                                                                        Content-Disposition: attachment; filename=burp_state
+                                                                        Transfer-Encoding: chunked
+
+                                                                        ...data...
+                                                                      </code></pre>
+
+                                                                      <h3>
+                                                                        <a id="post-state" class="anchor" href="#post-state" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /state</h3>
+
+                                                                        <p>Restore state from file. Burp reloads after restoration, so you will receive an empty reply from the server.</p>
+
+                                                                        <pre><code>$ curl -i http://localhost:8001/state -X POST -F file=@restore_state
+                                                                        </code></pre>
+
+                                                                        <h3>
+                                                                          <a id="post-proxyinterceptenable" class="anchor" href="#post-proxyinterceptenable" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /proxy/intercept/enable</h3>
+
+                                                                          <p>Enable proxy intercept.</p>
+
+                                                                          <pre><code>$ curl -i http://localhost:8001/proxy/intercept/enable -X POST
+                                                                          </code></pre>
+
+                                                                          <h3>
+                                                                            <a id="post-proxyinterceptdisable" class="anchor" href="#post-proxyinterceptdisable" aria-hidden="true"><span class="octicon octicon-link"></span></a>POST /proxy/intercept/disable</h3>
+
+                                                                            <p>Disable proxy intercept.</p>
+
+                                                                            <pre><code>$ curl -i http://localhost:8001/proxy/intercept/disable -X POST
+                                                                            </code></pre>
+
+                                                                          </section>
+                                                                        </div>
+                                                                      </div>
+</body>
+</html>
