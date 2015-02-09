@@ -3,6 +3,8 @@ package burp;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Date;
 import java.util.List;
 import java.net.URL;
@@ -188,6 +190,17 @@ public class ApiServer {
             BScanQueueID id = scanQueue.addToQueue(item);
             response.status(201);
             return gson.toJson(id);
+        });
+
+        get("/scan/active", (request, response) -> {
+            List<BScanQueueItem> items = new ArrayList<>();
+            Set<Entry<Integer, IScanQueueItem>> set = scanQueue.getItems();
+            for (Entry<Integer, IScanQueueItem> entry : set) {
+                items.add(BScanQueueItemFactory.create(entry.getKey(), entry.getValue(), callbacks));
+            }
+            response.status(200);
+            return gson.toJson(new BArrayWrapper(items));
+
         });
 
         get("/scan/active/:id", (request, response) -> {

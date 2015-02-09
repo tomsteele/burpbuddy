@@ -1,6 +1,8 @@
 package burp;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class BScanQueue {
     private HashMap<Integer, IScanQueueItem> queue;
@@ -21,6 +23,10 @@ public class BScanQueue {
 
     public IScanQueueItem getItem(int key) {
         return queue.get(key);
+    }
+
+    public Set<Entry<Integer, IScanQueueItem>> getItems() {
+        return queue.entrySet();
     }
 
     public int getCount() {
