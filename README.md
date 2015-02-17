@@ -277,6 +277,20 @@ $ curl -i http://localhost:8001/scan/active -X POST -H 'Content-Type: applicatio
 HTTP/1.1 201 Created
 ```
 
+### GET /scan/active
+Get a list of all items from the active queue.
+
+Example:
+```
+$ curl -i http://localhost:8001/scan/active
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF8
+Content-Length: 126
+Server: Jetty(9.0.z-SNAPSHOT)
+
+{"data":[{"id":1,"errors":0,"insertionPointCount":0,"requestCount":0,"status":"0% complete","percentComplete":0,"issues":[]}]}
+```
+
 ### GET /scan/active/{id}
 Get scan item `id` from the active queue.
 
