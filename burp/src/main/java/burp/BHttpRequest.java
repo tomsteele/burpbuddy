@@ -23,6 +23,9 @@ public class BHttpRequest extends BSocketMessage {
 
     public List<String> headersToList() {
         List<String> burpHeaders = new ArrayList<>();
+        if (this.query == null) {
+            this.query = "";
+        }
         burpHeaders.add(this.method + " " + this.path  + this.query + " " + this.httpVersion);
         for (Map.Entry<String, String> pair: this.headers.entrySet()) {
             burpHeaders.add(pair.getKey() + ": " + pair.getValue());
