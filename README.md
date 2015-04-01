@@ -1,14 +1,14 @@
 burpbuddy
 =========
 
-burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API over the network through various mediums, with the goal of enabling development in any language without the restrictions of the JVM. See the documentation below and [examples](https://github.com/liftsecurity/burpbuddy/tree/master/examples) for more information.
+burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API over the network through various mediums, with the goal of enabling development in any language without the restrictions of the JVM. See the documentation below and [examples](https://github.com/tomsteele/burpbuddy-examples) for more information.
 
 ## Requirements
 - Java 8
 - [BurpSuite](http://portswigger.net/burp/)
 
 ## Releases
-A compiled and packaged Jar file is available [here](https://github.com/liftsecurity/burpbuddy/releases/download/v2.1.0/burpbuddy-2.1.0.jar).
+A compiled and packaged Jar file is available [here](https://github.com/tomsteeleburpbuddy/releases/download/v2.1.0/burpbuddy-2.1.0.jar).
 
 ## Build instructions for development or bleeding edge
 ### OSX
@@ -23,8 +23,6 @@ A compiled and packaged Jar file is available [here](https://github.com/liftsecu
 
 ## Security
 The WebSocket Server and HTTP API are protected from CSRF. With the exception that the WebSocket Server allows an origin of `*` by default, which can be modified once you know the domain structure of your connection. We did this because it's very difficult to come up with all the possible combinations that can occur across different mediums. Currently, we do not provide any means of authentication. By default, the servers all listen on localhost.
-
-If you identify a vulnerability, please report it to us security@liftsecurity.io and we will work with you to resolve it. Thanks!
 
 ## WebSocket Server
 A WebSocket server is available to ingest streaming events from burp. Currently this includes requests, responses, and scan issues. Use the `messageType` field to distinguish between each of these. Sometimes it may appear that duplicate events are being emmited, this is because burp is emitting for different tools (proxy, spider, etc). Use the `toolFlag` parameter to differentiate between these. Also, `highlight` and `comment` fields will be tool dependent.
