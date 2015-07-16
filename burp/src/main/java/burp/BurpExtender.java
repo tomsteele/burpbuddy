@@ -190,10 +190,21 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                     BHttpRequest modifiedHttpRequest = gson.fromJson(new InputStreamReader(modRequestResponse.getRawBody()),
                             BHttpRequest.class);
 
-                    iHttpRequestResponse.setRequest(helpers.buildHttpMessage(modifiedHttpRequest.headersToList(),
-                            Base64.decodeBase64(modifiedHttpRequest.body)));
-                    iHttpRequestResponse.setHttpService(helpers.buildHttpService(modifiedHttpRequest.host,
-                            modifiedHttpRequest.port, modifiedHttpRequest.protocol));
+                    // Call setRequest() only if 'headers' or 'body' were changed. This prevents Burp
+                    // marking the request "edited" when there are no changes.
+                    // Note: headers.equals() can be used because it is a HashMap of Strings.
+                    if (!bHttpRequest.headers.equals(modifiedHttpRequest.headers) ||
+                        !bHttpRequest.body.equals(modifiedHttpRequest.body)) {
+                        iHttpRequestResponse.setRequest(helpers.buildHttpMessage(modifiedHttpRequest.headersToList(),
+                                                                                 Base64.decodeBase64(modifiedHttpRequest.body)));
+                    }
+                    // Call setHttpService() only if 'host', 'port' or 'protocol' were changed.
+                    if (!bHttpRequest.host.equals(modifiedHttpRequest.host) ||
+                        (bHttpRequest.port!=modifiedHttpRequest.port) ||
+                        !bHttpRequest.protocol.equals(modifiedHttpRequest.protocol)) {
+                        iHttpRequestResponse.setHttpService(helpers.buildHttpService(modifiedHttpRequest.host,
+                                                                                     modifiedHttpRequest.port, modifiedHttpRequest.protocol));
+                    }
                     if (modifiedHttpRequest.comment != null && !modifiedHttpRequest.comment.equals("")) {
                         iHttpRequestResponse.setComment(modifiedHttpRequest.comment);
                     }
@@ -222,7 +233,11 @@ public class BurpExtender implements IBurpExtender, IExtensionStateListener,
                     BHttpResponse modifiedHttpResponse = gson.fromJson(new InputStreamReader(modRequestResponse.getRawBody()),
                             BHttpResponse.class);
 
-                    iHttpRequestResponse.setResponse(Base64.decodeBase64(modifiedHttpResponse.raw));
+                    // Call setResponse() only if 'raw' was changed. This prevents Burp
+                    // marking the response "edited" when there are no changes.
+                    if (resp.raw.equals(modifiedHttpResponse.raw)==false) {
+                        iHttpRequestResponse.setResponse(Base64.decodeBase64(modifiedHttpResponse.raw));
+                    }
 
                     if (modifiedHttpResponse.comment != null && !modifiedHttpResponse.comment.equals("")) {
                         iHttpRequestResponse.setComment(modifiedHttpResponse.comment);
