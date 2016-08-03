@@ -1,4 +1,7 @@
 *.class
+gradle/
+.gradle
+build
 node_modules/
 .DS_Store
 *.iml
