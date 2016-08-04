@@ -4,9 +4,8 @@ import java.net.MalformedURLException
 import java.net.URL
 
 class BScanIssue(var issue: ScanIssue): IScanIssue {
-    override fun getHttpMessages(): Array<out IHttpRequestResponse> {
+    override fun getHttpMessages(): Array<IHttpRequestResponse> {
         val messages = mutableListOf<IHttpRequestResponse>()
-
         for (message in issue.http_messages) {
             messages.add(BHttpRequestResponse(message, HttpService(issue.host, issue.port, issue.protocol)))
         }
