@@ -1,7 +1,7 @@
 burpbuddy
 =========
 
-burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API over the network through various mediums, with the goal of enabling development in any language without the restrictions of the JVM. See the documentation below and [examples](https://github.com/tomsteele/burpbuddy-examples) for more information.
+burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API over the network through various mediums, with the goal of enabling development in any language without the restrictions of the JVM. See the [wiki](https://github.com/tomsteele/burpbuddy/wiki) for more information.
 
 ## Requirements
 - Java 8
