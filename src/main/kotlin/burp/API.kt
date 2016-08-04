@@ -234,18 +234,19 @@ class API() {
         })
 
         get("/sitemap", fun(req: Request, res: Response): String {
-            val siteMap = callbacks.getSiteMap("").map {
-
-                b2b.httpRequestResponseToJsonObject(it)
+            val maps = jsonArray()
+            callbacks.getSiteMap("").forEach {
+                maps.add(b2b.httpRequestResponseToJsonObject(it))
             }
-            return siteMap.toJsonArray().toString()
+            return maps.toString()
         })
 
         get("/sitemap/:url", fun(req: Request, res: Response): String {
-            val siteMap = callbacks.getSiteMap(req.params("url")).map {
-                b2b.httpRequestResponseToJsonObject(it)
+            val maps = jsonArray()
+            callbacks.getSiteMap(String(b64Decoder.decode(req.params("url")))).forEach {
+                maps.add(b2b.httpRequestResponseToJsonObject(it))
             }
-            return siteMap.toJsonArray().toString()
+            return maps.toString()
         })
 
         post("/sitemap", fun(req: Request, res: Response): String {
@@ -288,7 +289,10 @@ class API() {
         return HttpRequest("", "", "", emptyMap(), raw, 0, "", 0)
     }
 
-    fun httpResponseWithOnlyRaw(raw: String): HttpResponse {
+    fun httpResponseWithOnlyRaw(raw: String?): HttpResponse? {
+        if (raw == null) {
+            return null
+        }
         return HttpResponse(raw, "", 0, 0, 0, 0, emptyList(), emptyMap())
     }
 

@@ -11,6 +11,6 @@ class BHttpService(val service: HttpService): IHttpService {
     }
 
     override fun getProtocol(): String {
-        return protocol
+        return service.protocol
     }
 }

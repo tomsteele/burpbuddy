@@ -60,7 +60,8 @@ class ProxyListener(val requestHookField: JTextField, val responseHookField: JTe
             }
             val modifiedHttpResponse = gson.fromJson<HttpRequestResponse>(String(response.data))
             val originalHttpResponse = gson.fromJson<HttpRequestResponse>(jsonHttpRequestResponse.toString())
-            if (!originalHttpResponse.response.raw.equals(modifiedHttpResponse.response.raw)) {
+            if (originalHttpResponse.response != null && modifiedHttpResponse.response != null
+                    && !originalHttpResponse.response.raw.equals(modifiedHttpResponse.response.raw)) {
                 httpRequestResponse.response = callbacks.helpers.base64Decode(modifiedHttpResponse.response.raw)
             }
             if (modifiedHttpResponse.comment != "" ) {

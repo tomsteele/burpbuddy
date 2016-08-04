@@ -21,11 +21,14 @@ class BHttpRequestResponse(val httpMessage: HttpRequestResponse, val service: Ht
     }
 
     override fun getHighlight(): String {
-        return highlight
+        return httpMessage.highlight
     }
 
-    override fun getResponse(): ByteArray {
-        return Base64.getDecoder().decode(httpMessage.response.raw)
+    override fun getResponse(): ByteArray? {
+        if (httpMessage.response != null && httpMessage.response.raw.length > 0) {
+            return Base64.getDecoder().decode(httpMessage.response.raw)
+        }
+        return null
     }
 
     override fun setHighlight(color: String) {
@@ -39,7 +42,9 @@ class BHttpRequestResponse(val httpMessage: HttpRequestResponse, val service: Ht
     }
 
     override fun setResponse(rawResponse: ByteArray) {
-        httpMessage.response.raw = Base64.getEncoder().encodeToString(rawResponse)
+        if (httpMessage.response != null) {
+            httpMessage.response.raw = Base64.getEncoder().encodeToString(rawResponse)
+        }
     }
 
     override fun getRequest(): ByteArray {
