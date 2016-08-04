@@ -261,11 +261,12 @@ class API() {
         })
 
         get("/proxyhistory", fun(req: Request, res: Response): String {
-            val history = callbacks.proxyHistory.map {
-                b2b.httpRequestResponseToJsonObject(it)
+            val history = jsonArray()
+            callbacks.proxyHistory.forEach {
+                history.add(b2b.httpRequestResponseToJsonObject(it))
             }
             res.status(200)
-            return history.toJsonArray().toString()
+            return history.toString()
         })
 
         post("/proxy/intercept/enable", fun(req: Request, res: Response): String {
