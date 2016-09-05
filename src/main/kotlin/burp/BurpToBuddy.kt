@@ -49,9 +49,12 @@ class BurpToBuddy(val callbacks: IBurpExtenderCallbacks) {
     fun cookiesToJsonArray(icookies: List<ICookie>) : JsonArray {
         val cookies = jsonArray()
         for (cookie in icookies) {
+            var expiration = ""
+            if (cookie.expiration != null)
+                expiration = cookie.expiration.toString()
             cookies.add(jsonObject(
                     "domain" to cookie.domain,
-                    "expiration" to cookie.expiration,
+                    "expiration" to expiration,
                     "path" to cookie.path,
                     "name" to cookie.name,
                     "value" to cookie.value
