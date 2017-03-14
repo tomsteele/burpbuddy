@@ -6,9 +6,13 @@ import com.google.gson.Gson
 import spark.Request
 import spark.Response
 import spark.Spark.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
+import javax.servlet.ServletOutputStream
 import com.github.salomonbrys.kotson.jsonArray
 import com.github.salomonbrys.kotson.toJsonArray
 
@@ -105,6 +109,44 @@ class API() {
             val issues = b2b.scanIssuesToJsonArray(callbacks.getScanIssues(url))
             res.status(200)
             return issues.toString()
+        })
+
+        get("/scanreport/:url", fun(req: Request, res: Response): String {
+            val format = "HTML"
+            val url = String(b64Decoder.decode(req.params("url") ?: ""))
+            val issues =  callbacks.getScanIssues(url)
+            val file: File
+
+            try {
+                file = File.createTempFile(UUID.randomUUID().toString(), "ScanReport")
+            } catch (e: IOException) {
+                res.status(500)
+                return jsonObject(
+                    "Error creating file" to e.message
+                ).toString()
+            }
+
+            callbacks.generateScanReport(format, issues, file)
+            res.type("application/octet-stream")
+            res.header("Content-Disposition", "attachment; filename=ScanReport.HTML")
+
+            try {
+                val inputStream = FileInputStream(file.getPath())
+                val outStream = res.raw().getOutputStream()
+                var bytes = inputStream.read()
+                while (bytes != -1) {
+                    outStream.write(bytes)
+                    bytes = inputStream.read()
+                }
+            } catch (e: IOException) {
+                res.status(500)
+                return jsonObject(
+                    "Error reading file" to e.message
+                ).toString()
+            } finally {
+                file.deleteOnExit()
+            }
+            return ""
         })
 
         post("/scanissues", fun(req: Request, res: Response) : String {
