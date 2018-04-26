@@ -1,0 +1,16 @@
+{
+  "name": "proxy_request_hook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tom Steele",
+  "license": "MIT",
+  "dependencies": {
+    "eslint-config-standard": "^11.0.0",
+    "hapi": "^17.3.1",
+    "qs": "^6.5.1"
+  }
+}
