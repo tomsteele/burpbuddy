@@ -3,7 +3,7 @@ package burp
 import java.net.MalformedURLException
 import java.net.URL
 
-class BScanIssue(var issue: ScanIssue): IScanIssue {
+class BScanIssue(private var issue: ScanIssue): IScanIssue {
     override fun getHttpMessages(): Array<IHttpRequestResponse> {
         val messages = mutableListOf<IHttpRequestResponse>()
         for (message in issue.http_messages) {

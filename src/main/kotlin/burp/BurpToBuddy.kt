@@ -5,8 +5,8 @@ import com.github.salomonbrys.kotson.jsonObject
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 
-class BurpToBuddy(val callbacks: IBurpExtenderCallbacks) {
-    fun httpMessagesToJsonArray(httpMessages: Array<IHttpRequestResponse>) : JsonArray {
+class BurpToBuddy(private val callbacks: IBurpExtenderCallbacks) {
+    private fun httpMessagesToJsonArray(httpMessages: Array<IHttpRequestResponse>) : JsonArray {
         val messages = jsonArray()
         for (message in httpMessages) {
             messages.add(httpRequestResponseToJsonObject(message))
@@ -14,7 +14,7 @@ class BurpToBuddy(val callbacks: IBurpExtenderCallbacks) {
         return messages
     }
 
-    fun httpRequestToJsonObject(request: ByteArray) : JsonObject {
+    private fun httpRequestToJsonObject(request: ByteArray) : JsonObject {
         val reqInfo = callbacks.helpers.analyzeRequest(request)
         val allHeaders = reqInfo.headers
         val headers = allHeaders.subList(1, allHeaders.size)
@@ -46,7 +46,7 @@ class BurpToBuddy(val callbacks: IBurpExtenderCallbacks) {
         )
     }
 
-    fun cookiesToJsonArray(icookies: List<ICookie>) : JsonArray {
+    private fun cookiesToJsonArray(icookies: List<ICookie>) : JsonArray {
         val cookies = jsonArray()
         for (cookie in icookies) {
             var expiration = ""
@@ -63,7 +63,7 @@ class BurpToBuddy(val callbacks: IBurpExtenderCallbacks) {
         return cookies
     }
 
-    fun httpResponseToJsonObject(response: ByteArray) : JsonObject {
+    private fun httpResponseToJsonObject(response: ByteArray) : JsonObject {
         val respInfo = callbacks.helpers.analyzeResponse(response)
         val allHeaders = respInfo.headers
         val headers = allHeaders.subList(1, allHeaders.size)
@@ -90,10 +90,10 @@ class BurpToBuddy(val callbacks: IBurpExtenderCallbacks) {
     fun httpRequestResponseToJsonObject(httpMessage: IHttpRequestResponse) : JsonObject {
         var request = jsonObject()
         var response = jsonObject()
-        if (httpMessage.request != null && httpMessage.request.size > 0) {
+        if (httpMessage.request != null && httpMessage.request.isNotEmpty()) {
             request = httpRequestToJsonObject(httpMessage.request)
         }
-        if (httpMessage.response != null && httpMessage.response.size > 0) {
+        if (httpMessage.response != null && httpMessage.response.isNotEmpty()) {
             response = httpResponseToJsonObject(httpMessage.response)
         }
         return jsonObject(

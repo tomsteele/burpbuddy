@@ -2,7 +2,7 @@ package burp
 
 import java.util.Base64
 
-class BHttpRequestResponse(val httpMessage: HttpRequestResponse, val service: HttpService): IHttpRequestResponse {
+class BHttpRequestResponse(private val httpMessage: HttpRequestResponse, val service: HttpService): IHttpRequestResponse {
     override fun setComment(comment: String) {
         httpMessage.comment = comment
     }
@@ -25,7 +25,7 @@ class BHttpRequestResponse(val httpMessage: HttpRequestResponse, val service: Ht
     }
 
     override fun getResponse(): ByteArray? {
-        if (httpMessage.response != null && httpMessage.response.raw.length > 0) {
+        if (httpMessage.response != null && httpMessage.response.raw.isNotEmpty()) {
             return Base64.getDecoder().decode(httpMessage.response.raw)
         }
         return null

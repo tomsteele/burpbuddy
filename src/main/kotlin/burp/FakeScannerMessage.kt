@@ -4,8 +4,8 @@ import com.github.kittinunf.fuel.Fuel
 import javax.swing.JTextField
 import javax.swing.JToggleButton
 
-class FakeScannerMessage(val requestResponseTextField: JTextField, val requestResponseButton: JToggleButton,
-                         val callbacks: IBurpExtenderCallbacks) : IScannerCheck {
+class FakeScannerMessage(private val requestResponseTextField: JTextField, private val requestResponseButton: JToggleButton,
+                         private val callbacks: IBurpExtenderCallbacks) : IScannerCheck {
     override fun doActiveScan(baseRequestResponse: IHttpRequestResponse?, insertionPoint: IScannerInsertionPoint?): MutableList<IScanIssue>? {
         return null
     }
@@ -22,7 +22,7 @@ class FakeScannerMessage(val requestResponseTextField: JTextField, val requestRe
         val b2b = BurpToBuddy(callbacks)
         val jsonHttpRequestResponse = b2b.httpRequestResponseToJsonObject(baseRequestResponse)
         hookURLs.forEach{
-            Fuel.Companion.post(it).
+            Fuel.post(it).
                     body(jsonHttpRequestResponse.toString()).response()
         }
         return null

@@ -4,8 +4,8 @@ import com.github.kittinunf.fuel.Fuel
 import javax.swing.JTextField
 import javax.swing.JToggleButton
 
-class ScannerListener(val scannerHookJTextField: JTextField, val scannerHookButton:JToggleButton,
-                      val callbacks: IBurpExtenderCallbacks): IScannerListener {
+class ScannerListener(private val scannerHookJTextField: JTextField, private val scannerHookButton:JToggleButton,
+                      private val callbacks: IBurpExtenderCallbacks): IScannerListener {
 
     override fun newScanIssue(issue: IScanIssue) {
         val hookURLs = scannerHookJTextField.text.split(",")
@@ -15,7 +15,7 @@ class ScannerListener(val scannerHookJTextField: JTextField, val scannerHookButt
             return
         }
         hookURLs.forEach{
-            Fuel.Companion.post(it).
+            Fuel.post(it).
                     body(issueObj.toString()).response()
         }
     }

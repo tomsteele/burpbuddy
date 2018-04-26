@@ -7,44 +7,42 @@ import javax.swing.*
 
 class BurpExtender : IBurpExtender, ITab {
 
-    val version = "3.0.0"
-    val extensionName = "BurpBuddy"
+    private val version = "3.0.0"
+    private val extensionName = "BurpBuddy"
 
-    var api: API
-    var scroll : JScrollPane
-    var panel : JPanel
+    private var api: API = API()
+    private var scroll : JScrollPane
+    private var panel : JPanel = JPanel()
 
     init {
-        api = API()
-        panel = JPanel()
         scroll = JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
         scroll.border = BorderFactory.createEmptyBorder()
     }
 
-    object confLabels {
-        val IsAPIEnabled = "BB_IS_API_ENABLED"
-        val APIAddress = "BB_API_IP"
-        val APIPort = "BB_API_PORT"
+    object ConfLabels {
+        const val IsAPIEnabled = "BB_IS_API_ENABLED"
+        const val APIAddress = "BB_API_IP"
+        const val APIPort = "BB_API_PORT"
 
-        val IsProxyRequestHookEnabled = "BB_IS_PROXY_REQUEST_HOOK_ENABLED"
-        val ProxyReqHookURL = "BB_PROXY_REQUEST_HOOK_URL"
-        val IsProxyResponseHookEnabled = "BB_IS_PROXY_RESPONSE_HOOK_ENABLED"
-        val ProxyResHookURL = "BB_PROXY_RESPONSE_HOOK_URL"
+        const val IsProxyRequestHookEnabled = "BB_IS_PROXY_REQUEST_HOOK_ENABLED"
+        const val ProxyReqHookURL = "BB_PROXY_REQUEST_HOOK_URL"
+        const val IsProxyResponseHookEnabled = "BB_IS_PROXY_RESPONSE_HOOK_ENABLED"
+        const val ProxyResHookURL = "BB_PROXY_RESPONSE_HOOK_URL"
 
-        val IsHTTPRequestHooksEnabled = "BB_IS_HTTP_REQUEST_HOOKS_ENABLED"
-        val HTTPRequestHookURLs = "BB_HTTP_REQUEST_HOOKS_URLS"
+        const val IsHTTPRequestHooksEnabled = "BB_IS_HTTP_REQUEST_HOOKS_ENABLED"
+        const val HTTPRequestHookURLs = "BB_HTTP_REQUEST_HOOKS_URLS"
 
-        val IsHTTPResponseHooksEnabled = "BB_IS_HTTP_RESPONSE_HOOKS_ENABLED"
-        val HTTPResponseHookURLs = "BB_HTTP_RESPONSE_HOOKS_URLS"
+        const val IsHTTPResponseHooksEnabled = "BB_IS_HTTP_RESPONSE_HOOKS_ENABLED"
+        const val HTTPResponseHookURLs = "BB_HTTP_RESPONSE_HOOKS_URLS"
 
-        val IsScannerHooksEnabled = "BB_IS_SCANNER_HOOKS_ENABLED"
-        val ScannerHooksURLs = "BB_SCANNER_HOOKS_URLS"
+        const val IsScannerHooksEnabled = "BB_IS_SCANNER_HOOKS_ENABLED"
+        const val ScannerHooksURLs = "BB_SCANNER_HOOKS_URLS"
 
-        val IsHTTPRequestResponseHooksEnabled = "BB_IS_HTTP_REQUEST_RESPONSE_HOOKS_ENABLED"
-        val HTTPRequestResponseHookURLs = "BB_HTTP_REQUEST_RESPONSE_HOOKS_ENABLED"
+        const val IsHTTPRequestResponseHooksEnabled = "BB_IS_HTTP_REQUEST_RESPONSE_HOOKS_ENABLED"
+        const val HTTPRequestResponseHookURLs = "BB_HTTP_REQUEST_RESPONSE_HOOKS_ENABLED"
     }
 
-    object conf {
+    object Conf {
         var IsAPIEnabled = "1"
         var APIAddress = "127.0.0.1"
         var APIPort = "8001"
@@ -67,44 +65,44 @@ class BurpExtender : IBurpExtender, ITab {
         var HTTPRequestResponseHookURLs = "http://127.0.0.1:3001/reqresp"
 
         fun restore(callbacks: IBurpExtenderCallbacks) {
-            IsAPIEnabled = callbacks.loadExtensionSetting(confLabels.IsAPIEnabled) ?: IsAPIEnabled
-            APIAddress = callbacks.loadExtensionSetting(confLabels.APIAddress) ?: APIAddress
-            APIPort = callbacks.loadExtensionSetting(confLabels.APIPort) ?: APIPort
+            IsAPIEnabled = callbacks.loadExtensionSetting(ConfLabels.IsAPIEnabled) ?: IsAPIEnabled
+            APIAddress = callbacks.loadExtensionSetting(ConfLabels.APIAddress) ?: APIAddress
+            APIPort = callbacks.loadExtensionSetting(ConfLabels.APIPort) ?: APIPort
 
-            IsProxyRequestHookEnabled = callbacks.loadExtensionSetting(confLabels.IsProxyRequestHookEnabled) ?: IsProxyRequestHookEnabled
-            ProxyReqHookURL = callbacks.loadExtensionSetting(confLabels.ProxyReqHookURL) ?: ProxyReqHookURL
-            IsProxyResponseHookEnabled = callbacks.loadExtensionSetting(confLabels.IsProxyResponseHookEnabled) ?: IsProxyResponseHookEnabled
-            ProxyResHookURL = callbacks.loadExtensionSetting(confLabels.ProxyResHookURL) ?: ProxyResHookURL
+            IsProxyRequestHookEnabled = callbacks.loadExtensionSetting(ConfLabels.IsProxyRequestHookEnabled) ?: IsProxyRequestHookEnabled
+            ProxyReqHookURL = callbacks.loadExtensionSetting(ConfLabels.ProxyReqHookURL) ?: ProxyReqHookURL
+            IsProxyResponseHookEnabled = callbacks.loadExtensionSetting(ConfLabels.IsProxyResponseHookEnabled) ?: IsProxyResponseHookEnabled
+            ProxyResHookURL = callbacks.loadExtensionSetting(ConfLabels.ProxyResHookURL) ?: ProxyResHookURL
 
-            IsHTTPRequestHooksEnabled = callbacks.loadExtensionSetting(confLabels.IsHTTPRequestHooksEnabled) ?: IsHTTPRequestHooksEnabled
-            HTTPRequestHookURLs = callbacks.loadExtensionSetting(confLabels.HTTPRequestHookURLs) ?: HTTPRequestHookURLs
+            IsHTTPRequestHooksEnabled = callbacks.loadExtensionSetting(ConfLabels.IsHTTPRequestHooksEnabled) ?: IsHTTPRequestHooksEnabled
+            HTTPRequestHookURLs = callbacks.loadExtensionSetting(ConfLabels.HTTPRequestHookURLs) ?: HTTPRequestHookURLs
 
-            IsHTTPResponseHooksEnabled = callbacks.loadExtensionSetting(confLabels.IsHTTPResponseHooksEnabled) ?: IsHTTPResponseHooksEnabled
-            HTTPResponseHookURLs = callbacks.loadExtensionSetting(confLabels.HTTPResponseHookURLs) ?: HTTPResponseHookURLs
+            IsHTTPResponseHooksEnabled = callbacks.loadExtensionSetting(ConfLabels.IsHTTPResponseHooksEnabled) ?: IsHTTPResponseHooksEnabled
+            HTTPResponseHookURLs = callbacks.loadExtensionSetting(ConfLabels.HTTPResponseHookURLs) ?: HTTPResponseHookURLs
 
-            IsScannerHooksEnabled = callbacks.loadExtensionSetting(confLabels.IsScannerHooksEnabled) ?: IsScannerHooksEnabled
-            ScannerHooksURLs = callbacks.loadExtensionSetting(confLabels.ScannerHooksURLs) ?: ScannerHooksURLs
+            IsScannerHooksEnabled = callbacks.loadExtensionSetting(ConfLabels.IsScannerHooksEnabled) ?: IsScannerHooksEnabled
+            ScannerHooksURLs = callbacks.loadExtensionSetting(ConfLabels.ScannerHooksURLs) ?: ScannerHooksURLs
 
-            IsHTTPRequestResponseHooksEnabled = callbacks.loadExtensionSetting(confLabels.IsHTTPRequestResponseHooksEnabled) ?: IsHTTPRequestResponseHooksEnabled
-            HTTPRequestResponseHookURLs = callbacks.loadExtensionSetting(confLabels.HTTPRequestResponseHookURLs) ?: HTTPRequestResponseHookURLs
+            IsHTTPRequestResponseHooksEnabled = callbacks.loadExtensionSetting(ConfLabels.IsHTTPRequestResponseHooksEnabled) ?: IsHTTPRequestResponseHooksEnabled
+            HTTPRequestResponseHookURLs = callbacks.loadExtensionSetting(ConfLabels.HTTPRequestResponseHookURLs) ?: HTTPRequestResponseHookURLs
         }
 
         fun save(callbacks: IBurpExtenderCallbacks) {
-            callbacks.saveExtensionSetting(confLabels.IsAPIEnabled, IsAPIEnabled)
-            callbacks.saveExtensionSetting(confLabels.APIAddress, APIAddress)
-            callbacks.saveExtensionSetting(confLabels.APIPort, APIPort)
-            callbacks.saveExtensionSetting(confLabels.IsProxyRequestHookEnabled, IsProxyRequestHookEnabled)
-            callbacks.saveExtensionSetting(confLabels.ProxyReqHookURL, ProxyReqHookURL)
-            callbacks.saveExtensionSetting(confLabels.IsProxyResponseHookEnabled, IsProxyResponseHookEnabled)
-            callbacks.saveExtensionSetting(confLabels.ProxyResHookURL, ProxyResHookURL)
-            callbacks.saveExtensionSetting(confLabels.IsHTTPRequestHooksEnabled, IsHTTPRequestHooksEnabled)
-            callbacks.saveExtensionSetting(confLabels.HTTPRequestHookURLs, HTTPRequestHookURLs)
-            callbacks.saveExtensionSetting(confLabels.IsHTTPResponseHooksEnabled, IsHTTPResponseHooksEnabled)
-            callbacks.saveExtensionSetting(confLabels.HTTPResponseHookURLs, HTTPResponseHookURLs)
-            callbacks.saveExtensionSetting(confLabels.IsScannerHooksEnabled, IsScannerHooksEnabled)
-            callbacks.saveExtensionSetting(confLabels.ScannerHooksURLs, ScannerHooksURLs)
-            callbacks.saveExtensionSetting(confLabels.IsHTTPRequestResponseHooksEnabled, IsHTTPRequestResponseHooksEnabled)
-            callbacks.saveExtensionSetting(confLabels.HTTPRequestResponseHookURLs, HTTPRequestResponseHookURLs)
+            callbacks.saveExtensionSetting(ConfLabels.IsAPIEnabled, IsAPIEnabled)
+            callbacks.saveExtensionSetting(ConfLabels.APIAddress, APIAddress)
+            callbacks.saveExtensionSetting(ConfLabels.APIPort, APIPort)
+            callbacks.saveExtensionSetting(ConfLabels.IsProxyRequestHookEnabled, IsProxyRequestHookEnabled)
+            callbacks.saveExtensionSetting(ConfLabels.ProxyReqHookURL, ProxyReqHookURL)
+            callbacks.saveExtensionSetting(ConfLabels.IsProxyResponseHookEnabled, IsProxyResponseHookEnabled)
+            callbacks.saveExtensionSetting(ConfLabels.ProxyResHookURL, ProxyResHookURL)
+            callbacks.saveExtensionSetting(ConfLabels.IsHTTPRequestHooksEnabled, IsHTTPRequestHooksEnabled)
+            callbacks.saveExtensionSetting(ConfLabels.HTTPRequestHookURLs, HTTPRequestHookURLs)
+            callbacks.saveExtensionSetting(ConfLabels.IsHTTPResponseHooksEnabled, IsHTTPResponseHooksEnabled)
+            callbacks.saveExtensionSetting(ConfLabels.HTTPResponseHookURLs, HTTPResponseHookURLs)
+            callbacks.saveExtensionSetting(ConfLabels.IsScannerHooksEnabled, IsScannerHooksEnabled)
+            callbacks.saveExtensionSetting(ConfLabels.ScannerHooksURLs, ScannerHooksURLs)
+            callbacks.saveExtensionSetting(ConfLabels.IsHTTPRequestResponseHooksEnabled, IsHTTPRequestResponseHooksEnabled)
+            callbacks.saveExtensionSetting(ConfLabels.HTTPRequestResponseHookURLs, HTTPRequestResponseHookURLs)
         }
     }
 
@@ -118,7 +116,7 @@ class BurpExtender : IBurpExtender, ITab {
             api.quit()
         })
 
-        conf.restore(callbacks)
+        Conf.restore(callbacks)
 
         SwingUtilities.invokeLater {
 
@@ -131,47 +129,47 @@ class BurpExtender : IBurpExtender, ITab {
             val scannerHooksLabel = JLabel("Scanner Hook URLs")
             val httpRequestResponseHooksLabel = JLabel("HTTP Request/Response Hook URLs")
 
-            val apiIPField = JTextField(conf.APIAddress)
-            val apiPortField = JTextField(conf.APIPort)
-            val proxyRequestHookField = JTextField(conf.ProxyReqHookURL)
-            val proxyResponseHookField = JTextField(conf.ProxyResHookURL)
-            val httpRequestHooksField = JTextField(conf.HTTPRequestHookURLs)
-            val httpResponseHooksField = JTextField(conf.HTTPResponseHookURLs)
-            val scannerHooksField = JTextField(conf.ScannerHooksURLs)
-            val httpRequestResponseHooksField = JTextField(conf.HTTPRequestResponseHookURLs)
+            val apiIPField = JTextField(Conf.APIAddress)
+            val apiPortField = JTextField(Conf.APIPort)
+            val proxyRequestHookField = JTextField(Conf.ProxyReqHookURL)
+            val proxyResponseHookField = JTextField(Conf.ProxyResHookURL)
+            val httpRequestHooksField = JTextField(Conf.HTTPRequestHookURLs)
+            val httpResponseHooksField = JTextField(Conf.HTTPResponseHookURLs)
+            val scannerHooksField = JTextField(Conf.ScannerHooksURLs)
+            val httpRequestResponseHooksField = JTextField(Conf.HTTPRequestResponseHookURLs)
 
             val isAPIEnabledButton = JToggleButton("Disabled", true)
-            if (conf.IsAPIEnabled == "1") {
+            if (Conf.IsAPIEnabled == "1") {
                 isAPIEnabledButton.text = "Enabled"
                 isAPIEnabledButton.isSelected = false
             }
             val isProxyRequestHookEnabledButton = JToggleButton("Disabled", true)
-            if (conf.IsProxyRequestHookEnabled == "1") {
+            if (Conf.IsProxyRequestHookEnabled == "1") {
                 isProxyRequestHookEnabledButton.text = "Enabled"
                 isProxyRequestHookEnabledButton.isSelected = false
             }
             val isProxyResponseHookEnabledButton = JToggleButton("Disabled", true)
-            if (conf.IsProxyResponseHookEnabled == "1") {
+            if (Conf.IsProxyResponseHookEnabled == "1") {
                 isProxyResponseHookEnabledButton.text = "Enabled"
                 isProxyResponseHookEnabledButton.isSelected = false
             }
             val isHttpRequestHooksEnabledButton = JToggleButton("Disabled", true)
-            if (conf.IsHTTPRequestHooksEnabled == "1") {
+            if (Conf.IsHTTPRequestHooksEnabled == "1") {
                 isHttpRequestHooksEnabledButton.text = "Enabled"
                 isHttpRequestHooksEnabledButton.isSelected = false
             }
             val isHttpResponseHooksEnabledButton = JToggleButton("Disabled", true)
-            if (conf.IsHTTPResponseHooksEnabled == "1") {
+            if (Conf.IsHTTPResponseHooksEnabled == "1") {
                 isHttpResponseHooksEnabledButton.text = "Enabled"
                 isHttpResponseHooksEnabledButton.isSelected = false
             }
             val isScannerHooksEnabledButton = JToggleButton("Disabled", true)
-            if (conf.IsScannerHooksEnabled == "1") {
+            if (Conf.IsScannerHooksEnabled == "1") {
                 isScannerHooksEnabledButton.text = "Enabled"
                 isScannerHooksEnabledButton.isSelected = false
             }
             val isHttpRequestResponseHooksEnabledButton = JToggleButton("Disabled", true)
-            if (conf.IsHTTPRequestResponseHooksEnabled == "1") {
+            if (Conf.IsHTTPRequestResponseHooksEnabled == "1") {
                 isHttpRequestResponseHooksEnabledButton.text = "Enabled"
                 isHttpRequestResponseHooksEnabledButton.isSelected = false
             }
@@ -179,56 +177,56 @@ class BurpExtender : IBurpExtender, ITab {
 
             saveButton.addActionListener {
                 if (!isAPIEnabledButton.isSelected) {
-                    conf.IsAPIEnabled = "1"
+                    Conf.IsAPIEnabled = "1"
                 } else {
-                    conf.IsAPIEnabled = "0"
+                    Conf.IsAPIEnabled = "0"
                 }
-                conf.APIAddress = apiIPField.text
-                conf.APIPort = apiPortField.text
+                Conf.APIAddress = apiIPField.text
+                Conf.APIPort = apiPortField.text
 
                 if (!isProxyRequestHookEnabledButton.isSelected) {
-                    conf.IsProxyRequestHookEnabled = "1"
+                    Conf.IsProxyRequestHookEnabled = "1"
                 } else {
-                    conf.IsProxyRequestHookEnabled = "0"
+                    Conf.IsProxyRequestHookEnabled = "0"
                 }
-                conf.ProxyReqHookURL = proxyRequestHookField.text
+                Conf.ProxyReqHookURL = proxyRequestHookField.text
 
                 if (!isProxyResponseHookEnabledButton.isSelected) {
-                    conf.IsProxyResponseHookEnabled = "1"
+                    Conf.IsProxyResponseHookEnabled = "1"
                 } else {
-                    conf.IsProxyResponseHookEnabled = "0"
+                    Conf.IsProxyResponseHookEnabled = "0"
                 }
-                conf.ProxyResHookURL = proxyResponseHookField.text
+                Conf.ProxyResHookURL = proxyResponseHookField.text
 
                 if (!isHttpRequestHooksEnabledButton.isSelected) {
-                    conf.IsHTTPRequestHooksEnabled = "1"
+                    Conf.IsHTTPRequestHooksEnabled = "1"
                 } else {
-                    conf.IsHTTPRequestHooksEnabled = "0"
+                    Conf.IsHTTPRequestHooksEnabled = "0"
                 }
-                conf.HTTPRequestHookURLs = httpRequestHooksField.text
+                Conf.HTTPRequestHookURLs = httpRequestHooksField.text
 
                 if (!isHttpResponseHooksEnabledButton.isSelected) {
-                    conf.IsHTTPResponseHooksEnabled = "1"
+                    Conf.IsHTTPResponseHooksEnabled = "1"
                 } else {
-                    conf.IsHTTPResponseHooksEnabled = "0"
+                    Conf.IsHTTPResponseHooksEnabled = "0"
                 }
-                conf.HTTPResponseHookURLs = httpResponseHooksField.text
+                Conf.HTTPResponseHookURLs = httpResponseHooksField.text
 
                 if (!isScannerHooksEnabledButton.isSelected) {
-                    conf.IsScannerHooksEnabled = "1"
+                    Conf.IsScannerHooksEnabled = "1"
                 } else {
-                    conf.IsScannerHooksEnabled = "0"
+                    Conf.IsScannerHooksEnabled = "0"
                 }
-                conf.ScannerHooksURLs = scannerHooksField.text
+                Conf.ScannerHooksURLs = scannerHooksField.text
 
                 if (!isHttpRequestResponseHooksEnabledButton.isSelected) {
-                    conf.IsHTTPRequestResponseHooksEnabled = "1"
+                    Conf.IsHTTPRequestResponseHooksEnabled = "1"
                 } else {
-                    conf.IsHTTPRequestResponseHooksEnabled = "0"
+                    Conf.IsHTTPRequestResponseHooksEnabled = "0"
                 }
-                conf.HTTPRequestResponseHookURLs = httpRequestResponseHooksField.text
+                Conf.HTTPRequestResponseHookURLs = httpRequestResponseHooksField.text
 
-                conf.save(callbacks)
+                Conf.save(callbacks)
             }
 
             isAPIEnabledButton.addActionListener {
@@ -241,8 +239,8 @@ class BurpExtender : IBurpExtender, ITab {
                     } else if (port.toInt() > 65535 || port.toInt() < 1) {
                         stderr.println("$port is not a valid TCP port")
                     } else {
-                        api.start(address, port.toInt(), callbacks, stdout)
-                        stdout.println("HTTP Server started on ${conf.APIAddress}:${conf.APIPort}")
+                        api.start(address, port.toInt(), callbacks)
+                        stdout.println("HTTP Server started on ${Conf.APIAddress}:${Conf.APIPort}")
                         isAPIEnabledButton.text = "Enabled"
                     }
                 } else {
@@ -302,14 +300,14 @@ class BurpExtender : IBurpExtender, ITab {
             callbacks.registerScannerListener(ScannerListener(scannerHooksField, isScannerHooksEnabledButton, callbacks))
             callbacks.registerScannerCheck(FakeScannerMessage(httpRequestResponseHooksField, isHttpResponseHooksEnabledButton, callbacks))
 
-            if (conf.IsAPIEnabled == "1") {
-                if (!isIPValid(conf.APIAddress)) {
-                    stderr.println("${conf.APIAddress} is not a valid IP address for this system")
-                } else if (conf.APIPort.toInt() > 65535 || conf.APIPort.toInt() < 1) {
-                    stderr.println("${conf.APIPort} is not a valid TCP port")
+            if (Conf.IsAPIEnabled == "1") {
+                if (!isIPValid(Conf.APIAddress)) {
+                    stderr.println("${Conf.APIAddress} is not a valid IP address for this system")
+                } else if (Conf.APIPort.toInt() > 65535 || Conf.APIPort.toInt() < 1) {
+                    stderr.println("${Conf.APIPort} is not a valid TCP port")
                 } else {
-                    api.start(conf.APIAddress, conf.APIPort.toInt(), callbacks, stdout)
-                    stdout.println("HTTP Server started on ${conf.APIAddress}:${conf.APIPort}")
+                    api.start(Conf.APIAddress, Conf.APIPort.toInt(), callbacks)
+                    stdout.println("HTTP Server started on ${Conf.APIAddress}:${Conf.APIPort}")
                 }
             }
 
@@ -374,7 +372,7 @@ class BurpExtender : IBurpExtender, ITab {
         return scroll
     }
 
-    fun isIPValid(ip: String): Boolean {
+    private fun isIPValid(ip: String): Boolean {
         val networks = NetworkInterface.getNetworkInterfaces()
         for (netint in networks) {
             for (inetAddresses in netint.inetAddresses) {
