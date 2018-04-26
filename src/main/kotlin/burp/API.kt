@@ -1,6 +1,7 @@
 package burp
 
 import com.github.salomonbrys.kotson.fromJson
+import com.github.salomonbrys.kotson.jsonArray
 import com.github.salomonbrys.kotson.jsonObject
 import com.google.gson.Gson
 import spark.Request
@@ -12,13 +13,10 @@ import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
-import javax.servlet.ServletOutputStream
-import com.github.salomonbrys.kotson.jsonArray
-import com.github.salomonbrys.kotson.toJsonArray
 
-class API() {
+class API {
 
-    fun start(ip: String, port: Int, callbacks: IBurpExtenderCallbacks, stdout: java.io.PrintWriter) {
+    fun start(ip: String, port: Int, callbacks: IBurpExtenderCallbacks) {
         val b64Decoder = Base64.getDecoder()
         val gson = Gson()
         val b2b = BurpToBuddy(callbacks)
@@ -28,11 +26,11 @@ class API() {
 
         val queue : MutableMap<Int, IScanQueueItem> = mutableMapOf()
 
-        before { request, response -> response.type("application/json; charset=UTF8") }
+        before("/*", { _, response -> response.type("application/json; charset=UTF8") })
 
-        before(fun(req: Request, res: Response) {
+        before("/*", fun(req: Request, _: Response) {
             val contentType = req.headers("content-type")
-            if (req.requestMethod().equals("GET")) {
+            if (req.requestMethod() == "GET") {
                 return
             }
             if ((contentType == null ||
@@ -42,12 +40,12 @@ class API() {
                     }
         })
 
-        exception(Exception::class.java) { e, req, resp ->
+        exception(Exception::class.java) { e, _, resp ->
             resp.status(400)
             resp.body("{\"error\": \"" + e.message + "\"}")
         }
 
-        get("/ping", fun(req: Request, res: Response): String {
+        get("/ping", fun(_: Request, res: Response): String {
             res.status(200)
             return "PONG"
         })
@@ -72,33 +70,33 @@ class API() {
 
         post("/scope", fun(req: Request, res: Response): String {
             val scopeMSG = gson.fromJson<URLMessage>(req.body())
-            try {
+            return try {
                 callbacks.includeInScope(URL(scopeMSG.url))
                 res.status(201)
-                return gson.toJson(scopeMSG)
+                gson.toJson(scopeMSG)
             } catch (e: MalformedURLException) {
                 res.status(400)
                 val msg = e.message ?: "invalid url"
-                return b2b.apiError("url", msg).toString()
+                b2b.apiError("url", msg).toString()
             }
         })
 
         delete("/scope/:url", fun(req: Request, res: Response): String {
             val urlParam = req.params("url") ?: ""
             val plainURL = String(b64Decoder.decode(urlParam))
-            try {
+            return try {
                 val url = URL(plainURL)
                 callbacks.excludeFromScope(url)
                 res.status(204)
-                return ""
+                ""
             } catch (e: MalformedURLException) {
                 res.status(400)
                 val msg = e.message ?: "invalid url"
-                return b2b.apiError("url", msg).toString()
+                b2b.apiError("url", msg).toString()
             }
         })
 
-        get("/scanissues", fun(req: Request, res: Response): String {
+        get("/scanissues", fun(_: Request, res: Response): String {
             val issues = b2b.scanIssuesToJsonArray(callbacks.getScanIssues(""))
             res.status(200)
             return issues.toString()
@@ -131,8 +129,8 @@ class API() {
             res.header("Content-Disposition", "attachment; filename=ScanReport.HTML")
 
             try {
-                val inputStream = FileInputStream(file.getPath())
-                val outStream = res.raw().getOutputStream()
+                val inputStream = FileInputStream(file.path)
+                val outStream = res.raw().outputStream
                 var bytes = inputStream.read()
                 while (bytes != -1) {
                     outStream.write(bytes)
@@ -159,21 +157,31 @@ class API() {
 
         post("/spider", fun(req: Request, res: Response): String {
             val urlMSG = gson.fromJson<URLMessage>(req.body())
-            try {
+            return try {
                 callbacks.sendToSpider(URL(urlMSG.url))
                 res.status(201)
-                return gson.toJson(urlMSG)
+                gson.toJson(urlMSG)
             } catch (e: MalformedURLException) {
                 res.status(400)
                 val msg = e.message ?: "invalid url"
-                return b2b.apiError("url", msg).toString()
+                b2b.apiError("url", msg).toString()
             }
         })
 
-        get("/jar", fun(req: Request, res: Response): String{
+        get("/jar", fun(_: Request, res: Response): String{
             val cookies = callbacks.cookieJarContents.map { Cookie(it.domain, it.expiration, it.path, it.name, it.value) }
             res.status(200)
-            return jsonArray(cookies).toString()
+            val items = jsonArray()
+            cookies.forEach {
+                items.add(jsonObject(
+                        "domain" to it.domain,
+                        "expiration" to (it.expiration?.toString() ?: ""),
+                        "path" to (it.path ?: ""),
+                        "name" to it.name,
+                        "value" to it.name
+                ))
+            }
+            return items.toString()
         })
 
         post("/jar", fun(req: Request, res: Response): String {
@@ -187,14 +195,14 @@ class API() {
             val scanMSG = gson.fromJson<ScanMessage>(req.body())
             val item = callbacks.doActiveScan(scanMSG.host, scanMSG.port, scanMSG.use_https, b64Decoder.decode(scanMSG.request))
             val id = queue.size + 1
-            queue.put(id, item)
+            queue[id] = item
             res.status(201)
             return jsonObject(
                     "id" to id
             ).toString()
         })
 
-        get("/scan/active", fun(req: Request, res: Response): String {
+        get("/scan/active", fun(_: Request, res: Response): String {
             val items = jsonArray()
             queue.entries.forEach {
                 val id = it.key
@@ -275,7 +283,7 @@ class API() {
             return ""
         })
 
-        get("/sitemap", fun(req: Request, res: Response): String {
+        get("/sitemap", fun(_: Request, _: Response): String {
             val maps = jsonArray()
             callbacks.getSiteMap("").forEach {
                 maps.add(b2b.httpRequestResponseToJsonObject(it))
@@ -283,7 +291,7 @@ class API() {
             return maps.toString()
         })
 
-        get("/sitemap/:url", fun(req: Request, res: Response): String {
+        get("/sitemap/:url", fun(req: Request, _: Response): String {
             val maps = jsonArray()
             callbacks.getSiteMap(String(b64Decoder.decode(req.params("url")))).forEach {
                 maps.add(b2b.httpRequestResponseToJsonObject(it))
@@ -302,7 +310,7 @@ class API() {
             return gson.toJson(message)
         })
 
-        get("/proxyhistory", fun(req: Request, res: Response): String {
+        get("/proxyhistory", fun(_: Request, res: Response): String {
             val history = jsonArray()
             callbacks.proxyHistory.forEach {
                 history.add(b2b.httpRequestResponseToJsonObject(it))
@@ -311,15 +319,15 @@ class API() {
             return history.toString()
         })
 
-        post("/proxy/intercept/enable", fun(req: Request, res: Response): String {
-            callbacks.setProxyInterceptionEnabled(true);
-            res.status(200);
+        post("/proxy/intercept/enable", fun(_: Request, res: Response): String {
+            callbacks.setProxyInterceptionEnabled(true)
+            res.status(200)
             return ""
         })
 
-        post("/proxy/intercept/disable", fun(req: Request, res: Response): String {
+        post("/proxy/intercept/disable", fun(_: Request, res: Response): String {
             callbacks.setProxyInterceptionEnabled(false)
-            res.status(200);
+            res.status(200)
             return ""
         })
     }
@@ -328,18 +336,18 @@ class API() {
         stop()
     }
 
-    fun httpRequestWithOnlyRaw(raw: String): HttpRequest {
+    private fun httpRequestWithOnlyRaw(raw: String): HttpRequest {
         return HttpRequest("", "", "", emptyMap(), raw, 0, "", 0)
     }
 
-    fun httpResponseWithOnlyRaw(raw: String?): HttpResponse? {
+    private fun httpResponseWithOnlyRaw(raw: String?): HttpResponse? {
         if (raw == null) {
             return null
         }
         return HttpResponse(raw, "", 0, 0, 0, 0, emptyList(), emptyMap())
     }
 
-    fun isNotSameOrigin(host: String, origin: String?): Boolean {
+    private fun isNotSameOrigin(host: String, origin: String?): Boolean {
         if (origin == null || origin.isEmpty()) {
             return false
         }

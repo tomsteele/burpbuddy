@@ -2,12 +2,12 @@ package burp
 
 import java.util.Date
 
-class BCookie(val cookie: Cookie): ICookie {
+class BCookie(private val cookie: Cookie): ICookie {
     override fun getDomain(): String {
         return cookie.domain
     }
 
-    override fun getExpiration(): Date {
+    override fun getExpiration(): Date? {
         return cookie.expiration
     }
 
@@ -15,7 +15,7 @@ class BCookie(val cookie: Cookie): ICookie {
         return cookie.name
     }
 
-    override fun getPath(): String {
+    override fun getPath(): String? {
         return cookie.path
     }
 
