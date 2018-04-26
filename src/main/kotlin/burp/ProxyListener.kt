@@ -2,14 +2,17 @@ package burp
 
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.core.requests.write
+import com.github.kittinunf.fuel.core.requests.writeln
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
+import com.sun.org.apache.xpath.internal.operations.Bool
 import javax.swing.JToggleButton
 import javax.swing.JTextField
 
-class ProxyListener(val requestHookField: JTextField, val responseHookField: JTextField,
-                    val requestHookButton: JToggleButton, val responseHookButton: JToggleButton,
-                    val callbacks: IBurpExtenderCallbacks): IProxyListener {
+class ProxyListener(private val requestHookField: JTextField, private val responseHookField: JTextField,
+                    private val requestHookButton: JToggleButton, private val responseHookButton: JToggleButton,
+                    private val callbacks: IBurpExtenderCallbacks): IProxyListener {
 
     override fun processProxyMessage(messageIsRequest: Boolean, message: IInterceptedProxyMessage) {
         val requestHookURL = requestHookField.text
@@ -27,19 +30,28 @@ class ProxyListener(val requestHookField: JTextField, val responseHookField: JTe
             jsonHttpRequestResponse.addProperty("reference_id", messageReference)
             jsonHttpRequestResponse.remove("response")
 
-            val (request, response, result) =  Fuel.post(requestHookURL).
+            val (_, response, _) =  Fuel.post(requestHookURL).
                     body(jsonHttpRequestResponse.toString()).response()
-            if (response.httpStatusCode != 200) {
+            if (response.statusCode != 200) {
                 return
             }
 
             val modifiedHttpRequest = gson.fromJson<HttpRequestResponse>(String(response.data))
             val originalHttpRequest = gson.fromJson<HttpRequestResponse>(jsonHttpRequestResponse.toString())
 
-            if (!originalHttpRequest.request.headers.equals(modifiedHttpRequest.request.headers) || !originalHttpRequest.request.body.equals(modifiedHttpRequest.request.body)) {
-                httpRequestResponse.request = callbacks.helpers.buildHttpMessage(modifiedHttpRequest.request.headers.map{
+            callbacks.stdout.write(modifiedHttpRequest.request.method)
+            if (requestHasChangesThatAreNotToRaw(originalHttpRequest, modifiedHttpRequest)) {
+                // Build the new "headers" to fit into burp's spec.
+                val methodPathVersion = "${modifiedHttpRequest.request.method} ${modifiedHttpRequest.request.path} ${modifiedHttpRequest.request.http_version}"
+                val headers = mutableListOf(methodPathVersion)
+                headers.addAll(modifiedHttpRequest.request.headers.map({
                     "${it.key}: ${it.value}"
-                }, callbacks.helpers.base64Decode(modifiedHttpRequest.request.body))
+                }))
+
+               httpRequestResponse.request = callbacks.helpers.buildHttpMessage(headers,
+                       callbacks.helpers.base64Decode(modifiedHttpRequest.request.body))
+            } else if (originalHttpRequest.request.raw != modifiedHttpRequest.request.raw) {
+                httpRequestResponse.request = callbacks.helpers.base64Decode(modifiedHttpRequest.request.raw)
             }
 
             if (modifiedHttpRequest.comment != "") {
@@ -54,14 +66,14 @@ class ProxyListener(val requestHookField: JTextField, val responseHookField: JTe
             jsonHttpRequestResponse.addProperty("reference_id", messageReference)
             jsonHttpRequestResponse.addProperty("tool", "proxy")
             jsonHttpRequestResponse.remove("request")
-            val (request, response, result) =  Fuel.post(responseHookURL).body(jsonHttpRequestResponse.toString()).responseString()
-            if (response.httpStatusCode != 200) {
+            val (_, response, _) =  Fuel.post(responseHookURL).body(jsonHttpRequestResponse.toString()).responseString()
+            if (response.statusCode != 200) {
                 return
             }
             val modifiedHttpResponse = gson.fromJson<HttpRequestResponse>(String(response.data))
             val originalHttpResponse = gson.fromJson<HttpRequestResponse>(jsonHttpRequestResponse.toString())
             if (originalHttpResponse.response != null && modifiedHttpResponse.response != null
-                    && !originalHttpResponse.response.raw.equals(modifiedHttpResponse.response.raw)) {
+                    && originalHttpResponse.response.raw != modifiedHttpResponse.response.raw) {
                 httpRequestResponse.response = callbacks.helpers.base64Decode(modifiedHttpResponse.response.raw)
             }
             if (modifiedHttpResponse.comment != "" ) {
@@ -71,5 +83,12 @@ class ProxyListener(val requestHookField: JTextField, val responseHookField: JTe
                 httpRequestResponse.highlight = modifiedHttpResponse.highlight
             }
         }
+    }
+
+    private fun requestHasChangesThatAreNotToRaw(x: HttpRequestResponse, y: HttpRequestResponse): Boolean {
+        return (x.request.method != y.request.method ||
+                x.request.path != y.request.path ||
+                x.request.body != y.request.body ||
+                x.request.http_version != y.request.http_version)
     }
 }
