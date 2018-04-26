@@ -8,7 +8,7 @@ burpbuddy exposes [Burp Suites's](http://portswigger.net/burp/) extender API ove
 - [BurpSuite](http://portswigger.net/burp/)
 
 ## Releases
-A compiled and packaged Jar file is available [here](https://github.com/tomsteele/burpbuddy/releases/tag/v3.0.0-BETA).
+A compiled and packaged Jar file is available [here](https://github.com/tomsteele/burpbuddy/releases/latest).
 
 ## Building from Source
 
