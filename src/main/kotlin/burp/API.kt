@@ -109,8 +109,8 @@ class API {
             return issues.toString()
         })
 
-        get("/scanreport/:url", fun(req: Request, res: Response): String {
-            val format = "HTML"
+        get("/scanreport/:format/:url", fun(req: Request, res: Response): String {
+            val format = req.params("format")
             val url = String(b64Decoder.decode(req.params("url") ?: ""))
             val issues =  callbacks.getScanIssues(url)
             val file: File
