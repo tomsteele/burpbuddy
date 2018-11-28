@@ -1,5 +1,4 @@
 *.class
-gradle/
 .gradle
 build
 node_modules/
