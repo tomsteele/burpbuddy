@@ -12,6 +12,7 @@ dependency-reduced-pom.xml
 .mtj.tmp/
 
 # Package Files #
+!gradle/wrapper/gradle-wrapper.jar
 *.jar
 *.war
 *.ear
