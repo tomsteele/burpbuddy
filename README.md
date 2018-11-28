@@ -15,7 +15,7 @@ A compiled and packaged Jar file is available [here](https://github.com/tomsteel
 1. Git clone this repo.
 1. Install `gradle` if you don't already have it. (For example,
    `$ brew install gradle` on OS X.)
-1. Run `$ gradle shadowJar` in the project root to build the `burpbuddy` JAR in
+1. Run `$ ./gradlew shadowJar` in the project root to build the `burpbuddy` JAR in
    `build/libs/burpbuddy-<VERSION>-all.jar`.
 
 ## Adding burpbuddy to Burp Suite
