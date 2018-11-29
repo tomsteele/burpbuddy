@@ -1,5 +1,4 @@
 *.class
-gradle/
 .gradle
 build
 node_modules/
@@ -14,6 +13,7 @@ dependency-reduced-pom.xml
 
 # Package Files #
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.ear
 
